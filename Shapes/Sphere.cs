@@ -22,20 +22,36 @@ namespace template.Shapes
         {
             //Gravity only
             Velocity += new Vector3(0, (float)(Game.gravity * deltaTime), 0);
+            Vector3 prevVel = Velocity;
             Position += Velocity;
-
-            // If it's below the floor, correct how deep it went in and bounce
-            if (Position.Y < Game.floor)
-            {
-                float collisionDepth = Position.Y-Game.floor;
-                Position.Y = Game.floor + -collisionDepth;
+            
+            if (Position.Y < Game.floor) {
+                Position.Y = Game.floor + Math.Abs(Game.floor - Position.Y);
 
                 //Bounce
-                Velocity = -0.9f*Velocity;
-
+                Velocity.Y *= -1;
             }
-
-            
+            if (Position.Y > 1) {
+                Position.Y = 1 - Math.Abs(Position.Y - 1);
+                Velocity.Y *= -1;
+            }
+            if (Position.X < 0) {
+                Position.X *= -1;
+                Velocity.X *= -1;
+            } else if (Position.X > 1) {
+                Position.X = 1 - Math.Abs(Position.X - 1);
+                Velocity.X *= -1;
+            }
+            if (Position.Z < 0) {
+                Position.Z *= -1;
+                Velocity.Z *= -1;
+            } else if (Position.Z > 1) {
+                Position.Z = 1 - Math.Abs(Position.Z - 1);
+                Velocity.Z *= -1;
+            }
+            if (prevVel != Velocity) {
+                Velocity *= 0.9f;
+            }
         }
     }
 }

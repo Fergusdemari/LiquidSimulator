@@ -1,6 +1,7 @@
 ﻿using OpenTK;
 using System;
 using System.Collections.Generic;
+using System.Drawing;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -11,6 +12,7 @@ namespace template.Shapes
     {
         public Vector3 Position;
         public Vector3 Velocity;
+        public Vector3 color;
 
         public Shape(Vector3 position, Vector3 velocity)
         {

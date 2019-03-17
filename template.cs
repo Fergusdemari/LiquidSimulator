@@ -193,7 +193,7 @@ namespace Template
         public void ResetCamera()
         {
             Camera = Matrix4.CreatePerspectiveFieldOfView(1f, 1f, .1f, 1000);
-            position = new Vector3(0, 0, -2);
+            position = new Vector3(-0.5f, 0, -2);
             UpDirectionOriginal = new Vector3(0, 1, 0);
             ViewDirectionOriginal = new Vector3(0, 0, 1);
 
