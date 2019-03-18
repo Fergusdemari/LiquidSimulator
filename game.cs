@@ -8,7 +8,7 @@ using template.Shapes;
 namespace Template {
 
     class Game {
-        public Shape[] points = new Shape[200000];
+        public Shape[] points = new Shape[1000000];
         public static float gravity = -0.03f;
         public static float floor = -0.5f;
         private bool threading = true;
@@ -26,7 +26,7 @@ namespace Template {
         // tick: Does one frame worth of work
         public void Tick(FrameEventArgs e) {
             if (threading) {
-                int workPerTask = 1000;
+                int workPerTask = 100000;
                 Parallel.For(0, points.Length/workPerTask, new ParallelOptions { MaxDegreeOfParallelism = 8 }, j => {
                     for (int i = j*workPerTask; i < (j+1)*workPerTask; i++) {
                         points[i].Update(e.Time);

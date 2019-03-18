@@ -37,7 +37,7 @@ namespace Template
             ResetCamera();
             // called upon app init
             GL.Hint(HintTarget.PerspectiveCorrectionHint, HintMode.Nicest);
-            ClientSize = new Size(640, 400);
+            ClientSize = new Size(1280, 720);
             game = new Game();
             game.screen = new Surface(Width, Height);
             Sprite.target = game.screen;
