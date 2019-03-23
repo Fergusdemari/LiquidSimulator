@@ -1,0 +1,10 @@
+D:\Libraries\Documents\Utrecht Master\Game Physics\GraphicsEngine\bin\Debug\template.exe.config
+D:\Libraries\Documents\Utrecht Master\Game Physics\GraphicsEngine\bin\Debug\template.exe
+D:\Libraries\Documents\Utrecht Master\Game Physics\GraphicsEngine\bin\Debug\template.pdb
+D:\Libraries\Documents\Utrecht Master\Game Physics\GraphicsEngine\bin\Debug\OpenTK.dll
+D:\Libraries\Documents\Utrecht Master\Game Physics\GraphicsEngine\bin\Debug\OpenTK.dll.config
+D:\Libraries\Documents\Utrecht Master\Game Physics\GraphicsEngine\obj\Debug\template.csprojAssemblyReference.cache
+D:\Libraries\Documents\Utrecht Master\Game Physics\GraphicsEngine\obj\Debug\template.csproj.CoreCompileInputs.cache
+D:\Libraries\Documents\Utrecht Master\Game Physics\GraphicsEngine\obj\Debug\template.csproj.CopyComplete
+D:\Libraries\Documents\Utrecht Master\Game Physics\GraphicsEngine\obj\Debug\template.exe
+D:\Libraries\Documents\Utrecht Master\Game Physics\GraphicsEngine\obj\Debug\template.pdb
