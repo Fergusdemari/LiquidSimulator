@@ -12,20 +12,6 @@ namespace template
     class Util
     {
 
-        //Clampless RGB conversion
-        public static int CreateColorInt(int red, int green, int blue) {
-            return (red << 16) + (green << 8) + blue;
-        }
-
-        //Clamped RGB conversion
-        public static int CreateColorIntSafe(int red, int green, int blue)
-        {
-            red = MathHelper.Clamp(red, 0, 255);
-            green = MathHelper.Clamp(green, 0, 255);
-            blue = MathHelper.Clamp(blue, 0, 255);
-            return (red << 16) + (green << 8) + blue;
-        }
-
         public static Matrix4 RotateCamera(Matrix4 transformation)
         {
             Matrix4 m = OpenTKApp.Camera;
@@ -44,6 +30,7 @@ namespace template
             }
             OpenTKApp.Camera = res;
             OpenTKApp.ViewDirection = MatrixMultiplication4D(OpenTKApp.ViewDirectionOriginal, OpenTKApp.Camera);
+            // Up direction is fucked up
             OpenTKApp.UpDirection = MatrixMultiplication4D(OpenTKApp.UpDirectionOriginal, OpenTKApp.Camera);
 
             return res;

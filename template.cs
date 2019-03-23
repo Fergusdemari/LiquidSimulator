@@ -37,8 +37,9 @@ namespace Template
             ResetCamera();
             // called upon app init
             GL.Hint(HintTarget.PerspectiveCorrectionHint, HintMode.Nicest);
-            ClientSize = new Size(1280, 720);
-            game = new Game();
+            ClientSize = new Size(1080, 1080);
+            Location = new Point(0, 0); 
+            game = new Game(); 
             game.screen = new Surface(Width, Height);
             Sprite.target = game.screen;
             screenID = game.screen.GenTexture();
@@ -77,9 +78,12 @@ namespace Template
                 return;
             }
             GL.ClearColor(Color.Black);
-            GL.Enable(EnableCap.DepthTest);
+
             GL.Disable(EnableCap.Texture2D);
-            GL.Clear(ClearBufferMask.DepthBufferBit);
+            GL.DepthFunc(DepthFunction.Never);
+            GL.Enable(EnableCap.Blend);
+            GL.BlendFunc(BlendingFactorSrc.SrcAlpha, BlendingFactorDest.OneMinusSrcAlpha);
+            
             GL.Color3(0.5f, 1.0f, 1.0f);
 
             // convert Game.screen to OpenGL texture
@@ -109,31 +113,20 @@ namespace Template
         }
         public static void Main(string[] args)
         {
-            // entry point
-            using (OpenTKApp app = new OpenTKApp()) { app.Run(60.0, 120.0); }
+            // entry point -> Framerate stuff set?
+            using (OpenTKApp app = new OpenTKApp()) { app.Run(60.0, 60.0); }
         }
 
+        /// <summary>
+        /// Handles the input from the keyboard
+        /// </summary>
+        /// <param name="keyboard"></param>
         private void HandleInput(KeyboardState keyboard)
         {
             float rotationSpeed = 0.03f;
             float translationSpeed = 0.03f;
             if (keyboard[OpenTK.Input.Key.Escape]) this.Exit();
-            if (keyboard[OpenTK.Input.Key.Up])
-            {
-                Util.RotateCamera(
-                         new Matrix4(1, 0, 0, 0,
-                                     0, (float)Math.Cos(-rotationSpeed), (float)Math.Sin(-rotationSpeed), 0,
-                                     0, (float)-Math.Sin(-rotationSpeed), (float)Math.Cos(-rotationSpeed), 0,
-                                     0, 0, 0, 1));
-            }
-            if (keyboard[OpenTK.Input.Key.Down])
-            {
-                Util.RotateCamera(
-                         new Matrix4(1, 0, 0, 0,
-                                     0, (float)Math.Cos(rotationSpeed), (float)Math.Sin(rotationSpeed), 0,
-                                     0, (float)-Math.Sin(rotationSpeed), (float)Math.Cos(rotationSpeed), 0,
-                                     0, 0, 0, 1));
-            }
+
             if (keyboard[OpenTK.Input.Key.Left])
             {
                 Util.RotateCamera(
@@ -154,36 +147,44 @@ namespace Template
             {
                 ResetCamera();
             }
+            if (keyboard[OpenTK.Input.Key.Number1])
+            {
+                Game.RestartScene(true);
+            }
+            if (keyboard[OpenTK.Input.Key.Number2])
+            {
+                Game.RestartScene(false);
+            }
 
             if (keyboard[OpenTK.Input.Key.W])
             {
-                position += -ViewDirection * translationSpeed;
+                position += new Vector3(0, 0, translationSpeed);
             }
 
             if (keyboard[OpenTK.Input.Key.S])
             {
-                position += ViewDirection * translationSpeed;
+                position += new Vector3(0, 0, -translationSpeed);
             }
 
             if (keyboard[OpenTK.Input.Key.A])
             {
-                position += Vector3.Cross(ViewDirection, UpDirection) * translationSpeed;
+                position += new Vector3(translationSpeed, 0, 0);
             }
 
             if (keyboard[OpenTK.Input.Key.D])
             {
-                position += Vector3.Cross(ViewDirection, UpDirection) * -translationSpeed;
+                position += new Vector3(-translationSpeed, 0, 0);
             }
 
-            //if (keyboard[OpenTK.Input.Key.Q])
-            //{
-            //    position = new Vector3(position.X, position.Y - translationSpeed, position.Z);
-            //}
-            //
-            //if (keyboard[OpenTK.Input.Key.E])
-            //{
-            //    position = new Vector3(position.X, position.Y + translationSpeed, position.Z);
-            //}
+            if (keyboard[OpenTK.Input.Key.Q])
+            {
+                position += new Vector3(0, -translationSpeed, 0);
+            }
+            
+            if (keyboard[OpenTK.Input.Key.E])
+            {
+                position += new Vector3(0, translationSpeed, 0);
+            }
 
         }
 
@@ -193,12 +194,10 @@ namespace Template
         public void ResetCamera()
         {
             Camera = Matrix4.CreatePerspectiveFieldOfView(1f, 1f, .1f, 1000);
-            position = new Vector3(-0.5f, 0, -2);
-            UpDirectionOriginal = new Vector3(0, 1, 0);
+            position = new Vector3(-0.5f*Game.dim, -0.5f*Game.dim, -2 * Game.dim);
             ViewDirectionOriginal = new Vector3(0, 0, 1);
 
             ViewDirection = new Vector3(0, 0, 1);
-            UpDirection = new Vector3(0, 1, 0);
 
             // For some reason movementdirections are inverted until you call RotateCamera
             Util.RotateCamera(new Matrix4(1, 0, 0, 0,
