@@ -8,12 +8,14 @@ using Template;
 
 namespace template.Shapes
 {
-    class Sphere
+    public class Sphere
     {
         public float Radius;
 
         // Water like variables
         public float Mass;
+        public Vector3 Velocity;
+        public Vector3 NetForce;
         public float Density;
         public float Pressure;
 
@@ -22,7 +24,6 @@ namespace template.Shapes
         public int currentVoxelIndex = -2;
 
         // Basic object values
-        public Vector3 Velocity;
         public Vector3 color;
 
         // Position of this Sphere, and a property below it, so that whenever you change a particle's position, it automatically updates the grid position.
@@ -56,10 +57,6 @@ namespace template.Shapes
 
         public void Update(double timeStep)
         {
-
-            //Gravity only
-            ApplyExternalForces();
-            AdvanceParticles(timeStep);
             ResolveCollisions();
         }
 
@@ -93,35 +90,35 @@ namespace template.Shapes
             #region wallCollision
             if (Position.Y < 0)
             {
-                Position = new Vector3(Position.X, -Position.Y, Position.Z);
+                Position = new Vector3(Position.X, 0, Position.Z);
 
                 //Bounce
-                Velocity.Y *= -0.8f;
+                Velocity.Y *= 0.0f;
             }
             if (Position.Y >= Game.dim)
             {
-                Position = new Vector3(Position.X, Game.dim - Math.Abs(Position.Y - Game.dim), Position.Z);
-                Velocity.Y *= -1;
+                Position = new Vector3(Position.X, Game.dim, Position.Z);
+                Velocity.Y *= 0.0f;
             }
             if (Position.X < 0)
             {
-                Position = new Vector3(-Position.X, Position.Y, Position.Z);
-                Velocity.X *= -1;
+                Position = new Vector3(0, Position.Y, Position.Z);
+                Velocity.X *= 0.0f;
             }
             else if (Position.X >= Game.dim)
             {
-                Position = new Vector3(Game.dim - Math.Abs(Position.X - Game.dim), Position.Y, Position.Z);
-                Velocity.X *= -1;
+                Position = new Vector3(Game.dim, Position.Y, Position.Z);
+                Velocity.X *= 0.0f;
             }
             if (Position.Z < 0)
             {
-                Position = new Vector3(Position.X, Position.Y, -Position.Z);
-                Velocity.Z *= -1;
+                Position = new Vector3(Position.X, Position.Y, 0);
+                Velocity.Z *= 0.0f;
             }
             else if (Position.Z >= Game.dim)
             {
-                Position = new Vector3(Position.X, Position.Y, Game.dim - Math.Abs(Position.Z - Game.dim));
-                Velocity.Z *= -1;
+                Position = new Vector3(Position.X, Position.Y, Game.dim);
+                Velocity.Z *= 0.0f;
             }
             #endregion
 

@@ -16,7 +16,7 @@ namespace Template
             CUBES,      //Displays the voxels they're in
             SHAPES      //Displays whatever shape we decided to give particles (tilted cube atm)
         }
-        public Mode displayMode = Mode.PARTICLES;
+        public Mode displayMode = Mode.SHAPES;
 
         // Currently it's all done within 0-1. If you want it to be 0-3, set dim to 3 (In case of rounding errors maybe?)
         public static int dim = 1;
@@ -24,7 +24,7 @@ namespace Template
         // divided by 1000 because idk
         public static float gravity = -9.81f/1000;
         // Stepsize of each frame. Set to very tiny if you want it to look silky smooth
-        public float dt = 1.0f/60f;
+        public float dt = 10.0f/60f;
 
         //Debug showing
         bool showGrid = false;
@@ -37,7 +37,7 @@ namespace Template
         // Size of one voxel
         static float voxelSize = (float)dim / voxels;
 
-        public static int numberOfPoints = 30000;
+        public static int numberOfPoints = 35;
 
 
         public static Sphere[] points = new Sphere[numberOfPoints];
@@ -48,6 +48,7 @@ namespace Template
         
         // member variables
         public Surface screen;
+        public FluidSim simulator;
 
         // initialize
         public void Init()
@@ -67,10 +68,13 @@ namespace Template
             Random r = new Random(RNGSeed);
             for (int i = 0; i < points.Length; i++)
             {
-                points[i] = new Sphere(i, new Vector3(((float)r.NextDouble()/2+0.25f * dim), ((float)r.NextDouble() * dim), ((float)r.NextDouble() / 2 + 0.25f * dim)),
-                                       new Vector3((float)(r.NextDouble()-0.5f) / 10, (float)(r.NextDouble() - 1f) / 10, (float)(r.NextDouble() - 0.5f) / 10), (float)(1) / (voxels*4));
+                points[i] = new Sphere(i, new Vector3(((float)r.NextDouble()/2+0.2f * dim), ((float)r.NextDouble() * dim), ((float)r.NextDouble() / 2 + 0.25f * dim)),
+                                       new Vector3(0, -0.0f, 0), (float)(1) / (voxels*4));
                 points[i].color = points[i].Position / dim;
             }
+
+            //start fluid simulator
+            simulator = new FluidSim(numberOfPoints, dt, points);
         }
 
         /// <summary>
@@ -95,7 +99,8 @@ namespace Template
             {
                 for (int i = 0; i < points.Length; i++)
                 {
-                    points[i].Update(dt);
+                    //points[i].Update(dt);
+                    simulator.update();
                 }
             }
         }

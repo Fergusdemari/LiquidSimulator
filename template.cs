@@ -38,7 +38,7 @@ namespace Template
             // called upon app init
             GL.Hint(HintTarget.PerspectiveCorrectionHint, HintMode.Nicest);
             ClientSize = new Size(1080, 1080);
-            Location = new Point(0, 0); 
+            Location = new Point(300, 0); 
             game = new Game(); 
             game.screen = new Surface(Width, Height);
             Sprite.target = game.screen;
