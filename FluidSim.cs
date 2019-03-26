@@ -1,11 +1,10 @@
-﻿using System;
-using OpenTK;
+﻿using OpenTK;
+using System;
 using template.Shapes;
 
-namespace Template
-{
+namespace Template {
 
-    public class FluidSim{
+    public class FluidSim {
         int particleCount;
         //k is a coefficient basically for how dense the fluid is in general. Increasing k will make the particles act as if they represent a larger amount of fluid (box will appear more full)
         float k = 0.01f;
@@ -28,8 +27,8 @@ namespace Template
 
         public void update() {
             //loop through each particle and find it's density and pressure
-            for(int i = 0; i < particleCount; i++) {
-                Game.particles[i].NetForce = new Vector3(0,0,0);
+            for (int i = 0; i < particleCount; i++) {
+                Game.particles[i].NetForce = new Vector3(0, 0, 0);
                 calcDensity(Game.particles[i]);
                 calcPressure(Game.particles[i]);
             }
@@ -60,8 +59,9 @@ namespace Template
         public void calcDensity(Sphere p) {
             float dense = 0;
 
-            for(int i = 0; i < particleCount; i++) { 
-                dense += Game.particles[i].Mass * Poly6WeightKernel(p.Position, Game.particles[i].Position);
+            int[] closePointInds = Game.neighborsIndicesConcatenated(p.Position);
+            for (int i = 0; i < closePointInds.Length; i++) {
+                dense += Game.particles[closePointInds[i]].Mass * Poly6WeightKernel(p.Position, Game.particles[closePointInds[i]].Position);
             }
 
             p.Density = dense;
@@ -73,29 +73,29 @@ namespace Template
 
         public void calcPresssureForce(Sphere p) {
             Vector3 f = new Vector3(0, 0, 0);
-            for(int i = 0; i < particleCount; i++) {
-                if (p.ListIndex != i) {
-                    float fScalar = -1.0f * Game.particles[i].Mass * ((p.Pressure + Game.particles[i].Pressure) / (2 * Game.particles[i].Density));
-                    f += fScalar * spikyPressureKernel(p.Position, Game.particles[i].Position);
-                }
+            int[] closePointInds = Game.neighborsIndicesConcatenated(p.Position);
+            for (int i = 0; i < closePointInds.Length; i++) {
+                float fScalar = -1.0f * Game.particles[closePointInds[i]].Mass * ((p.Pressure + Game.particles[closePointInds[i]].Pressure) / (2 * Game.particles[closePointInds[i]].Density));
+                f += fScalar * spikyPressureKernel(p.Position, Game.particles[closePointInds[i]].Position);
             }
+            float withSelf = -1.0f * p.Mass * ((p.Pressure + p.Pressure) / (2 * p.Density));
+            f -= withSelf * spikyPressureKernel(p.Position, p.Position);
             p.NetForce += f;
         }
 
         public void calcViscosityForce(Sphere p) {
             Vector3 f = new Vector3(0, 0, 0);
-            for (int i = 0; i < particleCount; i++) {
-                if (p.ListIndex != i) {
-                    f += viscosity * Game.particles[i].Mass * ((Game.particles[i].Velocity - p.Velocity) / Game.particles[i].Density) * laplacianKernel(p.Position, Game.particles[i].Position);
-                }
+            int[] closePointInds = Game.neighborsIndicesConcatenated(p.Position);
+            for (int i = 0; i < closePointInds.Length; i++) {
+                f += viscosity * Game.particles[closePointInds[i]].Mass * ((Game.particles[closePointInds[i]].Velocity - p.Velocity) / Game.particles[closePointInds[i]].Density) * laplacianKernel(p.Position, Game.particles[closePointInds[i]].Position);
             }
-           // Console.WriteLine("viscosity force: " + f);
+            // Console.WriteLine("viscosity force: " + f);
             p.NetForce += f;
         }
 
         public void calcBodyForce(Sphere p) {
             Vector3 f = new Vector3(0, -9.81f * p.Mass, 0);
-           // Console.WriteLine("gravity force: " + f);
+            // Console.WriteLine("gravity force: " + f);
             p.NetForce += f;
         }
 
@@ -115,7 +115,7 @@ namespace Template
                 return 0.0f;
             }
 
-            return (315 / (64 * (float)Math.PI * (float)Math.Pow(d, 9))) * (float)Math.Pow(d*d - r*r, 3);
+            return (315 / (64 * (float)Math.PI * (float)Math.Pow(d, 9))) * (float)Math.Pow(d * d - r * r, 3);
         }
 
         //Spiky kernel for distance weighitng and vector gradient. used for calculating pressure force
