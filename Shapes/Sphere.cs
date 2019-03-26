@@ -57,6 +57,17 @@ namespace template.Shapes
 
         public void Update(double timeStep)
         {
+            Vector3 pos = Game.getPosition(Game.getParticleVoxelIndex(Position));
+
+            int[] neighbors = Game.neighborsIndicesConcatenated((int)pos.X, (int)pos.Y, (int)pos.Z);
+            if (ListIndex == 0)
+            {
+                color = new Vector3(1.0f, 0.4f, 0.7f);
+            }
+            for (int i = 0; i < neighbors.Length; i++)
+            {
+                Game.particles[neighbors[i]].color = new Vector3(0, 1.0f, 0);
+            }
             ResolveCollisions();
         }
 

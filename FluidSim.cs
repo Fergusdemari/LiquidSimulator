@@ -7,11 +7,10 @@ namespace Template
 
     public class FluidSim{
         int particleCount;
-        Sphere[] particles;
         //k is a coefficient basically for how dense the fluid is in general. Increasing k will make the particles act as if they represent a larger amount of fluid (box will appear more full)
-        float k = 0.018f;
+        float k = 0.01f;
         //how much the liquid stays together
-        float viscosity = 1.0f;
+        float viscosity = 1f;
         //a preference pressure value
         float p0 = 1.0f;
         //radius which is the cutoff for the kernels. Particle is only affected by other particles within this radius
@@ -25,34 +24,29 @@ namespace Template
             timeStep = timeStep_;
 
             //set up particles
-            particles = points;
-            for(int i = 0; i < particleCount; i++) {
-                particles[i].Mass = 0.3f;
-                particles[i].NetForce = new Vector3(0, 0, 0);
-            }
         }
 
         public void update() {
             //loop through each particle and find it's density and pressure
             for(int i = 0; i < particleCount; i++) {
-                particles[i].NetForce = new Vector3(0,0,0);
-                calcDensity(particles[i]);
-                calcPressure(particles[i]);
+                Game.particles[i].NetForce = new Vector3(0,0,0);
+                calcDensity(Game.particles[i]);
+                calcPressure(Game.particles[i]);
             }
 
             //calculate total force for every particle
             for (int i = 0; i < particleCount; i++) {
-                calcPresssureForce(particles[i]);
-                calcViscosityForce(particles[i]);
-                calcBodyForce(particles[i]);
+                calcPresssureForce(Game.particles[i]);
+                calcViscosityForce(Game.particles[i]);
+                calcBodyForce(Game.particles[i]);
 
                 //Get the acceleration resulted from the force and integrate for position
-                Vector3 acceleration = particles[i].NetForce / particles[i].Density;
-                particles[i].Velocity += acceleration * timeStep;
-                particles[i].Position += particles[i].Velocity * timeStep;
+                Vector3 acceleration = Game.particles[i].NetForce / Game.particles[i].Density;
+                Game.particles[i].Velocity += acceleration * timeStep;
+                Game.particles[i].Position += Game.particles[i].Velocity * timeStep;
 
                 //calling update for a Sphere object now only checks for boundary collision
-                particles[i].Update(timeStep);
+                Game.particles[i].Update(timeStep);
             }
         }
 
@@ -65,8 +59,9 @@ namespace Template
 
         public void calcDensity(Sphere p) {
             float dense = 0;
+
             for(int i = 0; i < particleCount; i++) { 
-                dense += particles[i].Mass * Poly6WeightKernel(p.Position, particles[i].Position);
+                dense += Game.particles[i].Mass * Poly6WeightKernel(p.Position, Game.particles[i].Position);
             }
 
             p.Density = dense;
@@ -80,8 +75,8 @@ namespace Template
             Vector3 f = new Vector3(0, 0, 0);
             for(int i = 0; i < particleCount; i++) {
                 if (p.ListIndex != i) {
-                    float fScalar = -1.0f * particles[i].Mass * ((p.Pressure + particles[i].Pressure) / (2 * particles[i].Density));
-                    f += fScalar * spikyPressureKernel(p.Position, particles[i].Position);
+                    float fScalar = -1.0f * Game.particles[i].Mass * ((p.Pressure + Game.particles[i].Pressure) / (2 * Game.particles[i].Density));
+                    f += fScalar * spikyPressureKernel(p.Position, Game.particles[i].Position);
                 }
             }
             p.NetForce += f;
@@ -91,7 +86,7 @@ namespace Template
             Vector3 f = new Vector3(0, 0, 0);
             for (int i = 0; i < particleCount; i++) {
                 if (p.ListIndex != i) {
-                    f += viscosity * particles[i].Mass * ((particles[i].Velocity - p.Velocity) / particles[i].Density) * laplacianKernel(p.Position, particles[i].Position);
+                    f += viscosity * Game.particles[i].Mass * ((Game.particles[i].Velocity - p.Velocity) / Game.particles[i].Density) * laplacianKernel(p.Position, Game.particles[i].Position);
                 }
             }
            // Console.WriteLine("viscosity force: " + f);

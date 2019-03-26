@@ -16,7 +16,7 @@ namespace Template
             CUBES,      //Displays the voxels they're in
             SHAPES      //Displays whatever shape we decided to give particles (tilted cube atm)
         }
-        public Mode displayMode = Mode.SHAPES;
+        public Mode displayMode = Mode.PARTICLES;
 
         // Currently it's all done within 0-1. If you want it to be 0-3, set dim to 3 (In case of rounding errors maybe?)
         public static int dim = 1;
@@ -24,23 +24,23 @@ namespace Template
         // divided by 1000 because idk
         public static float gravity = -9.81f/1000;
         // Stepsize of each frame. Set to very tiny if you want it to look silky smooth
-        public float dt = 10.0f/60f;
+        public float dt = 1.0f/480f;
 
         //Debug showing
         bool showGrid = false;
-        bool showBorders = true;
+        bool showBorders = false;
         // Keep threading false atm, issues with locking
         private bool threading = false;
 
         // Number of voxels in the grid per dimension
-        static int voxels = 32;
+        static int voxels = 3;
         // Size of one voxel
         static float voxelSize = (float)dim / voxels;
 
         public static int numberOfPoints = 35;
 
 
-        public static Sphere[] points = new Sphere[numberOfPoints];
+        public static Sphere[] particles = new Sphere[numberOfPoints];
         public static Dictionary<int, List<int>> grid = new Dictionary<int, List<int>>();
 
 
@@ -66,15 +66,17 @@ namespace Template
             }
             //Creates random points with random velocities
             Random r = new Random(RNGSeed);
-            for (int i = 0; i < points.Length; i++)
+            for (int i = 0; i < particles.Length; i++)
             {
-                points[i] = new Sphere(i, new Vector3(((float)r.NextDouble()/2+0.2f * dim), ((float)r.NextDouble() * dim), ((float)r.NextDouble() / 2 + 0.25f * dim)),
-                                       new Vector3(0, -0.0f, 0), (float)(1) / (voxels*4));
-                points[i].color = points[i].Position / dim;
+                particles[i] = new Sphere(i, new Vector3(((float)r.NextDouble()/2+0.2f * dim), ((float)r.NextDouble() * dim), ((float)r.NextDouble() / 2 + 0.25f * dim)),
+                                       new Vector3(0, -0.0f, 0), 0.1f);
+                particles[i].color = particles[i].Position / dim;
+                particles[i].Mass = 0.3f;
+                particles[i].NetForce = new Vector3(0, 0, 0);
             }
 
             //start fluid simulator
-            simulator = new FluidSim(numberOfPoints, dt, points);
+            simulator = new FluidSim(numberOfPoints, dt, particles);
         }
 
         /// <summary>
@@ -84,20 +86,20 @@ namespace Template
         public void Tick(FrameEventArgs e)
         {
             // If set to threading, split the taskforce up, but if the amount of points is too small then there's no point
-            if (threading && !(points.Length < 100))
+            if (threading && !(particles.Length < 100))
             {
-                int workPerTask = points.Length / 64;
-                Parallel.For(0, points.Length / workPerTask, new ParallelOptions { MaxDegreeOfParallelism = 8 }, j =>
+                int workPerTask = particles.Length / 64;
+                Parallel.For(0, particles.Length / workPerTask, new ParallelOptions { MaxDegreeOfParallelism = 8 }, j =>
                 {
                     for (int i = j * workPerTask; i < (j + 1) * workPerTask; i++)
                     {
-                        points[i].Update(dt);
+                        particles[i].Update(dt);
                     }
                 });
             }
             else
             {
-                for (int i = 0; i < points.Length; i++)
+                for (int i = 0; i < particles.Length; i++)
                 {
                     //points[i].Update(dt);
                     simulator.update();
@@ -118,9 +120,9 @@ namespace Template
                     GL.PointSize(2000);
                     GL.Color3(1.0f, 1.0f, 1.0f);
                     // Drawing of all spheres
-                    for (int i = 0; i < points.Length; i++)
+                    for (int i = 0; i < particles.Length; i++)
                     {
-                        GL.Vertex3(points[i].Position);
+                        GL.Vertex3(particles[i].Position);
                     }
                     GL.End();
                     break;
@@ -142,9 +144,9 @@ namespace Template
                     GL.PointSize(2000);
                     GL.Color3(1.0f, 1.0f, 1.0f);
                     // Drawing of all spheres
-                    for (int i = 0; i < points.Length; i++)
+                    for (int i = 0; i < particles.Length; i++)
                     {
-                        Vector3[] shape = points[i].getShape();
+                        Vector3[] shape = particles[i].getShape();
                         for (int j = 0; j < shape.Length; j++)
                         {
                             GL.Vertex3(shape[j]);
@@ -170,7 +172,7 @@ namespace Template
         // gets distance from indices in pointList
         public static float getSquaredDistance(int i, int j)
         {
-            return getSquaredDistance(points[i].Position, points[j].Position);
+            return getSquaredDistance(particles[i].Position, particles[j].Position);
         }
 
         public static float getDistance(int i, int j)
@@ -336,15 +338,15 @@ namespace Template
         /// <param name="y">Value between 0 and #voxels</param>
         /// <param name="z">Value between 0 and #voxels</param>
         /// <returns>Returns a list of the indices of all neighbor voxels. The indices are the ones used in Grid</returns>
-        public static int[] getNeighborIndices(int x, int y, int z)
+        public static int[] getNeighborIndices(int x, int y, int z, int radius = 1)
         {
             int[] res = new int[27];
             int counter = 0;
-            for (int xi = -1; xi <= 1; xi++)
+            for (int xi = -radius; xi <= radius; xi++)
             {
-                for (int yi = -1; yi <= 1; yi++)
+                for (int yi = -radius; yi <= radius; yi++)
                 {
-                    for (int zi = -1; zi <= 1; zi++)
+                    for (int zi = -radius; zi <= radius; zi++)
                     {
                         res[counter] = getVoxelIndex(x + xi, y + yi, z + zi);
                         counter++;
@@ -354,7 +356,7 @@ namespace Template
             int validOnes = 0;
             for (int i = 0; i < res.Length; i++)
             {
-                if (res[i] != -2) 
+                if (res[i] != -2 && res[i] >= 0 && res[i] < voxels*voxels*voxels) 
                 {
                     validOnes++;
                 }
@@ -363,7 +365,7 @@ namespace Template
             int counter1 = 0;
             for (int i = 0; i < res.Length; i++)
             {
-                if (res[i] != -2)
+                if (res[i] != -2 )
                 {
                     res2[counter1] = res[i];
                     counter1++;
@@ -392,9 +394,19 @@ namespace Template
         /// <param name="x"></param>
         /// <param name="y"></param>
         /// <param name="z"></param>
-        /// <returns></returns>
+        /// <returns>Returns the idnex of a voxel, and -2 if it's not in the grid </returns>
         private static int getVoxelIndex(int x, int y, int z)
         {
+            // If one is below 0, it's not in the grid
+            if (x < 0 || y < 0 || z < 0)
+                return -2;
+
+            int size = voxels * voxels * voxels;
+            // If one is above the allowed gridsize, it's not in the grid
+            if (x > size || y > size || z > size)
+                return -2;
+            
+
             return x + y * voxels + z * voxels * voxels;
         }
 
@@ -504,7 +516,7 @@ namespace Template
             }
 
             grid = new Dictionary<int, List<int>>();
-            points = new Sphere[numberOfPoints];
+            particles = new Sphere[numberOfPoints];
             // Creates the grid list empty
             for (int i = 0; i < voxels * voxels * voxels; i++)
             {
@@ -513,11 +525,11 @@ namespace Template
 
             //Creates random points with random velocities
             Random r = new Random(RNGSeed);
-            for (int i = 0; i < points.Length; i++)
+            for (int i = 0; i < particles.Length; i++)
             {
-                points[i] = new Sphere(i, new Vector3(((float)r.NextDouble() * dim), ((float)r.NextDouble() * dim), ((float)r.NextDouble() * dim)),
+                particles[i] = new Sphere(i, new Vector3(((float)r.NextDouble() * dim), ((float)r.NextDouble() * dim), ((float)r.NextDouble() * dim)),
                                        new Vector3((float)r.NextDouble() / 10, (float)r.NextDouble() / 10, (float)r.NextDouble() / 10), (float)(1) / (voxels * 4));
-                points[i].color = points[i].Position / dim;
+                particles[i].color = particles[i].Position / dim;
             }
         }
     }
