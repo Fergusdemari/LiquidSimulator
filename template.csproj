@@ -66,6 +66,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="FluidSim.cs" />
     <Compile Include="game.cs" />
     <Compile Include="Shapes\Sphere.cs" />
     <Compile Include="surface.cs" />
