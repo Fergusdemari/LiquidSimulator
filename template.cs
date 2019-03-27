@@ -37,7 +37,7 @@ namespace Template
             ResetCamera();
             // called upon app init
             GL.Hint(HintTarget.PerspectiveCorrectionHint, HintMode.Nicest);
-            ClientSize = new Size(1080, 1080);
+            ClientSize = new Size(1024, 1024);
             Location = new Point(300, 0); 
             game = new Game(); 
             game.screen = new Surface(Width, Height);
@@ -78,7 +78,6 @@ namespace Template
                 return;
             }
             GL.ClearColor(Color.Black);
-
             GL.Disable(EnableCap.Texture2D);
             GL.DepthFunc(DepthFunction.Never);
             GL.Enable(EnableCap.Blend);
@@ -109,6 +108,14 @@ namespace Template
 
             game.RenderGL();
             // tell OpenTK we're done rendering
+            
+            if (VideoMaker.isOpen())
+            {
+                Bitmap bm = new Bitmap(1024, 1024);
+                IntPtr ip = bm.GetHbitmap();
+                GL.ReadPixels(0, 0, 1024, 1024, PixelFormat.Rgb, PixelType.Bitmap, ip);
+                VideoMaker.writeImage(bm);
+            }
             SwapBuffers();
         }
         public static void Main(string[] args)
@@ -185,6 +192,17 @@ namespace Template
             {
                 position += new Vector3(0, translationSpeed, 0);
             }
+
+            if (keyboard[OpenTK.Input.Key.I])
+            {
+                VideoMaker.Start();
+            }
+
+            if (keyboard[OpenTK.Input.Key.O])
+            {
+                VideoMaker.Close();
+            }
+
 
         }
 

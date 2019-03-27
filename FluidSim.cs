@@ -7,7 +7,7 @@ namespace Template {
     public class FluidSim {
         int particleCount;
         //k is a coefficient basically for how dense the fluid is in general. Increasing k will make the particles act as if they represent a larger amount of fluid (box will appear more full)
-        float k = 0.01f;
+        float k = 0.05f;
         //how much the liquid stays together
         float viscosity = 1f;
         //a preference pressure value

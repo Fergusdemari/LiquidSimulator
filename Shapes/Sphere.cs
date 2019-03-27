@@ -104,32 +104,32 @@ namespace template.Shapes
                 Position = new Vector3(Position.X, 0, Position.Z);
 
                 //Bounce
-                Velocity.Y *= 0.0f;
+                Velocity.Y *= 0f;
             }
             if (Position.Y >= Game.dim)
             {
                 Position = new Vector3(Position.X, Game.dim, Position.Z);
-                Velocity.Y *= 0.0f;
+                Velocity.Y *= 0;
             }
             if (Position.X < 0)
             {
                 Position = new Vector3(0, Position.Y, Position.Z);
-                Velocity.X *= 0.0f;
+                Velocity.X *= 0;
             }
             else if (Position.X >= Game.dim)
             {
                 Position = new Vector3(Game.dim, Position.Y, Position.Z);
-                Velocity.X *= 0.0f;
+                Velocity.X *= 0;
             }
             if (Position.Z < 0)
             {
                 Position = new Vector3(Position.X, Position.Y, 0);
-                Velocity.Z *= 0.0f;
+                Velocity.Z *= 0;
             }
             else if (Position.Z >= Game.dim)
             {
                 Position = new Vector3(Position.X, Position.Y, Game.dim);
-                Velocity.Z *= 0.0f;
+                Velocity.Z *= 0;
             }
             #endregion
 
