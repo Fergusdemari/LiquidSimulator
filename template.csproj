@@ -88,12 +88,6 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="AviFile\AudioStream.cs" />
-    <Compile Include="AviFile\Avi.cs" />
-    <Compile Include="AviFile\AviManager.cs" />
-    <Compile Include="AviFile\AviStream.cs" />
-    <Compile Include="AviFile\EditableVideoStream.cs" />
-    <Compile Include="AviFile\VideoStream.cs" />
     <Compile Include="FluidSim.cs" />
     <Compile Include="game.cs" />
     <Compile Include="Shapes\Sphere.cs" />
@@ -105,9 +99,6 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
-    <None Include="AviFile\obj\Debug\AviFile.csproj.CoreCompileInputs.cache" />
-    <None Include="AviFile\obj\Debug\AviFile.csprojAssemblyReference.cache" />
-    <None Include="AviFile\obj\Debug\DesignTimeResolveAssemblyReferencesInput.cache" />
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
@@ -122,19 +113,7 @@
       <Install>false</Install>
     </BootstrapperPackage>
   </ItemGroup>
-  <ItemGroup>
-    <Content Include="AviFile\AviFile.csproj" />
-    <Content Include="AviFile\AviFile.sln" />
-    <Content Include="AviFile\bin\Debug\AviFile.dll" />
-    <Content Include="AviFile\bin\Debug\AviFile.pdb" />
-    <Content Include="AviFile\obj\Debug\AviFile.csproj.FileListAbsolute.txt" />
-    <Content Include="AviFile\obj\Debug\AviFile.dll" />
-    <Content Include="AviFile\obj\Debug\AviFile.pdb" />
-  </ItemGroup>
-  <ItemGroup>
-    <Folder Include="AviFile\obj\Debug\TempPE\" />
-    <Folder Include="AviFile\Properties\" />
-  </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

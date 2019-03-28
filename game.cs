@@ -14,7 +14,9 @@ namespace Template {
             SHAPES      //Displays whatever shape we decided to give particles (tilted cube atm)
         }
         public Mode displayMode = Mode.PARTICLES;
-        public static bool Recording = true;
+
+
+        public static bool Recording = false;
 
         // Currently it's all done within 0-1. If you want it to be 0-3, set dim to 3 (In case of rounding errors maybe?)
         public static int dim = 1;

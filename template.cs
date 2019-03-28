@@ -108,26 +108,27 @@ namespace Template
             GL.Translate(position);
 
             game.RenderGL();
-            // tell OpenTK we're done rendering
-            
-            //if (VideoMaker.IsOpen())
-            //{
-            //}
             if (Game.Recording) {
-                int width = 1024;
-                int height = 1024;
-
-                var snapShotBmp = new Bitmap(width, height);
-                BitmapData bmpData = snapShotBmp.LockBits(new Rectangle(0, 0, width, height), ImageLockMode.WriteOnly,
-                                                          System.Drawing.Imaging.PixelFormat.Format24bppRgb);
-                GL.ReadPixels(0, 0, width, height, OpenTK.Graphics.OpenGL.PixelFormat.Bgr, PixelType.UnsignedByte,
-                              bmpData.Scan0);
-                snapShotBmp.UnlockBits(bmpData);
-                snapShotBmp.RotateFlip(RotateFlipType.RotateNoneFlipXY);
-                VideoMaker.writeImage(snapShotBmp);
+                SaveImage();
             }
             SwapBuffers();
         }
+
+        private void SaveImage()
+        {
+            int width = 1024;
+            int height = 1024;
+
+            var snapShotBmp = new Bitmap(width, height);
+            BitmapData bmpData = snapShotBmp.LockBits(new Rectangle(0, 0, width, height), ImageLockMode.WriteOnly,
+                                                      System.Drawing.Imaging.PixelFormat.Format24bppRgb);
+            GL.ReadPixels(0, 0, width, height, OpenTK.Graphics.OpenGL.PixelFormat.Bgr, PixelType.UnsignedByte,
+                          bmpData.Scan0);
+            snapShotBmp.UnlockBits(bmpData);
+            snapShotBmp.RotateFlip(RotateFlipType.RotateNoneFlipXY);
+            VideoMaker.writeImage(snapShotBmp);
+        }
+
         public static void Main(string[] args)
         {
             // entry point -> Framerate stuff set?
