@@ -73,10 +73,6 @@
     <Prefer32Bit>true</Prefer32Bit>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="AForge.Video.FFMPEG, Version=2.2.5.0, Culture=neutral, PublicKeyToken=03563089b1be05dd, processorArchitecture=x86">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>.\AForge.Video.FFMPEG.dll</HintPath>
-    </Reference>
     <Reference Include="OpenTK, Version=1.1.0.0, Culture=neutral, PublicKeyToken=bad199fe84eb3df4, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>OpenTK\Release\OpenTK.dll</HintPath>
@@ -92,6 +88,12 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="AviFile\AudioStream.cs" />
+    <Compile Include="AviFile\Avi.cs" />
+    <Compile Include="AviFile\AviManager.cs" />
+    <Compile Include="AviFile\AviStream.cs" />
+    <Compile Include="AviFile\EditableVideoStream.cs" />
+    <Compile Include="AviFile\VideoStream.cs" />
     <Compile Include="FluidSim.cs" />
     <Compile Include="game.cs" />
     <Compile Include="Shapes\Sphere.cs" />
@@ -103,6 +105,9 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
+    <None Include="AviFile\obj\Debug\AviFile.csproj.CoreCompileInputs.cache" />
+    <None Include="AviFile\obj\Debug\AviFile.csprojAssemblyReference.cache" />
+    <None Include="AviFile\obj\Debug\DesignTimeResolveAssemblyReferencesInput.cache" />
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
@@ -116,6 +121,19 @@
       <ProductName>.NET Framework 3.5 SP1</ProductName>
       <Install>false</Install>
     </BootstrapperPackage>
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="AviFile\AviFile.csproj" />
+    <Content Include="AviFile\AviFile.sln" />
+    <Content Include="AviFile\bin\Debug\AviFile.dll" />
+    <Content Include="AviFile\bin\Debug\AviFile.pdb" />
+    <Content Include="AviFile\obj\Debug\AviFile.csproj.FileListAbsolute.txt" />
+    <Content Include="AviFile\obj\Debug\AviFile.dll" />
+    <Content Include="AviFile\obj\Debug\AviFile.pdb" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="AviFile\obj\Debug\TempPE\" />
+    <Folder Include="AviFile\Properties\" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

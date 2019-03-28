@@ -6,6 +6,7 @@ using OpenTK.Graphics;
 using OpenTK.Graphics.OpenGL;
 using OpenTK.Input;
 using template;
+using System.Drawing.Imaging;
 
 namespace Template
 {
@@ -109,12 +110,21 @@ namespace Template
             game.RenderGL();
             // tell OpenTK we're done rendering
             
-            if (VideoMaker.isOpen())
-            {
-                Bitmap bm = new Bitmap(1024, 1024);
-                IntPtr ip = bm.GetHbitmap();
-                GL.ReadPixels(0, 0, 1024, 1024, PixelFormat.Rgb, PixelType.Bitmap, ip);
-                VideoMaker.writeImage(bm);
+            //if (VideoMaker.IsOpen())
+            //{
+            //}
+            if (Game.Recording) {
+                int width = 1024;
+                int height = 1024;
+
+                var snapShotBmp = new Bitmap(width, height);
+                BitmapData bmpData = snapShotBmp.LockBits(new Rectangle(0, 0, width, height), ImageLockMode.WriteOnly,
+                                                          System.Drawing.Imaging.PixelFormat.Format24bppRgb);
+                GL.ReadPixels(0, 0, width, height, OpenTK.Graphics.OpenGL.PixelFormat.Bgr, PixelType.UnsignedByte,
+                              bmpData.Scan0);
+                snapShotBmp.UnlockBits(bmpData);
+                snapShotBmp.RotateFlip(RotateFlipType.RotateNoneFlipXY);
+                VideoMaker.writeImage(snapShotBmp);
             }
             SwapBuffers();
         }
@@ -193,15 +203,15 @@ namespace Template
                 position += new Vector3(0, translationSpeed, 0);
             }
 
-            if (keyboard[OpenTK.Input.Key.I])
-            {
-                VideoMaker.Start();
-            }
-
-            if (keyboard[OpenTK.Input.Key.O])
-            {
-                VideoMaker.Close();
-            }
+            //if (keyboard[OpenTK.Input.Key.I])
+            //{
+            //    VideoMaker.Start();
+            //}
+            //
+            //if (keyboard[OpenTK.Input.Key.O])
+            //{
+            //    VideoMaker.Close();
+            //}
 
 
         }

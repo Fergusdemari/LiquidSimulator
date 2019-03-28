@@ -13,7 +13,8 @@ namespace Template {
             CUBES,      //Displays the voxels they're in
             SHAPES      //Displays whatever shape we decided to give particles (tilted cube atm)
         }
-        public Mode displayMode = Mode.CUBES;
+        public Mode displayMode = Mode.PARTICLES;
+        public static bool Recording = true;
 
         // Currently it's all done within 0-1. If you want it to be 0-3, set dim to 3 (In case of rounding errors maybe?)
         public static int dim = 1;
@@ -21,20 +22,20 @@ namespace Template {
         // divided by 1000 because idk
         public static float gravity = -9.81f / 1000;
         // Stepsize of each frame. Set to very tiny if you want it to look silky smooth
-        public float dt = 1.0f / 120f;
+        public float dt = 1.0f / 240f;
         
         //Debug showing
         bool showGrid = false;
-        bool showBorders = false;
+        bool showBorders = true;
         // Keep threading false atm, issues with locking
         private bool threading = false;
 
         // Number of voxels in the grid per dimension
-        static int voxels = 128;
+        static int voxels = 8;
         // Size of one voxel
         static float voxelSize = (float)dim / voxels;
 
-        public static int numberOfPoints = 5000;
+        public static int numberOfPoints = 25;
 
 
         public static Sphere[] particles = new Sphere[numberOfPoints];
@@ -62,7 +63,7 @@ namespace Template {
             //Creates random points with random velocities
             Random r = new Random(RNGSeed);
             for (int i = 0; i < particles.Length; i++) {
-                particles[i] = new Sphere(i, new Vector3(((float)r.NextDouble() / 4 + 0.375f * dim), ((float)r.NextDouble()/4 * dim), ((float)r.NextDouble() / 4 + 0.375f * dim)),
+                particles[i] = new Sphere(i, new Vector3(((float)r.NextDouble() / 8 + 0.4375f * dim), ((float)r.NextDouble()/4 * dim), ((float)r.NextDouble() / 8 + 0.4375f * dim)),
                                        Vector3.Zero, 0.01f);
                 particles[i].color = particles[i].Position / dim;
                 particles[i].Mass = 0.3f;
@@ -97,7 +98,7 @@ namespace Template {
                 case Mode.PARTICLES:
                     GL.Begin(PrimitiveType.Points);
                     GL.PointSize(2000);
-                    GL.Color3(1.0f, 1.0f, 1.0f);
+                    GL.Color3(1.0f, 1.0f, 1f);
                     // Drawing of all spheres
                     for (int i = 0; i < particles.Length; i++) {
                         GL.Vertex3(particles[i].Position);
@@ -106,7 +107,7 @@ namespace Template {
                     break;
                 case Mode.CUBES:
                     GL.Begin(PrimitiveType.Triangles);
-                    GL.Color4(0.1f, 0.1, 1f, 0.3f);
+                    GL.Color4(0.1f, 0.1, 1f, 0.1f);
                     /// Drawing of voxels when not empty
                     for (int i = 0; i < voxels * voxels * voxels; i++) {
                         if (grid[i].Count > 0) {
