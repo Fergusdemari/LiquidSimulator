@@ -99,38 +99,6 @@ namespace template.Shapes
         private void ResolveCollisions()
         {
             #region wallCollision
-            if (Position.Y < 0)
-            {
-                Position = new Vector3(Position.X, 0, Position.Z);
-
-                //Bounce
-                Velocity.Y *= 0;
-            }
-            if (Position.Y >= Game.dim)
-            {
-                Position = new Vector3(Position.X, Game.dim, Position.Z);
-                Velocity.Y *= -1;
-            }
-            if (Position.X < 0)
-            {
-                Position = new Vector3(0, Position.Y, Position.Z);
-                Velocity.X *= -1;
-            }
-            else if (Position.X >= Game.dim)
-            {
-                Position = new Vector3(Game.dim, Position.Y, Position.Z);
-                Velocity.X *= -1;
-            }
-            if (Position.Z < -1)
-            {
-                Position = new Vector3(Position.X, Position.Y, 0);
-                Velocity.Z *= 0;
-            }
-            else if (Position.Z >= Game.dim)
-            {
-                Position = new Vector3(Position.X, Position.Y, Game.dim);
-                Velocity.Z *= -1;
-            }
             #endregion
 
             // TODO Collision with fellow particles
