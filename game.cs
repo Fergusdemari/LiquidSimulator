@@ -14,15 +14,14 @@ namespace Template {
             SHAPES      //Displays whatever shape we decided to give particles (tilted cube atm)
         }
         public Mode displayMode = Mode.PARTICLES;
-
-
-        public static bool Recording = false;
+        
+        public static bool Recording = true;
 
         // Currently it's all done within 0-1. If you want it to be 0-3, set dim to 3 (In case of rounding errors maybe?)
         public static int dim = 1;
 
         // divided by 1000 because idk
-        public static float gravity = -9.81f / 1000;
+        public static float gravity = -9.81f;
         // Stepsize of each frame. Set to very tiny if you want it to look silky smooth
         public float dt = 1.0f / 240f;
         
@@ -33,11 +32,11 @@ namespace Template {
         private bool threading = false;
 
         // Number of voxels in the grid per dimension
-        static int voxels = 8;
+        static int voxels = 256;
         // Size of one voxel
         static float voxelSize = (float)dim / voxels;
 
-        public static int numberOfPoints = 25;
+        public static int numberOfPoints = 10000;
 
 
         public static Sphere[] particles = new Sphere[numberOfPoints];
@@ -99,7 +98,6 @@ namespace Template {
             switch (displayMode) {
                 case Mode.PARTICLES:
                     GL.Begin(PrimitiveType.Points);
-                    GL.PointSize(2000);
                     GL.Color3(1.0f, 1.0f, 1f);
                     // Drawing of all spheres
                     for (int i = 0; i < particles.Length; i++) {
@@ -109,7 +107,7 @@ namespace Template {
                     break;
                 case Mode.CUBES:
                     GL.Begin(PrimitiveType.Triangles);
-                    GL.Color4(0.1f, 0.1, 1f, 0.1f);
+                    GL.Color4(0.1f, 0.1, 1f, 1f);
                     /// Drawing of voxels when not empty
                     for (int i = 0; i < voxels * voxels * voxels; i++) {
                         if (grid[i].Count > 0) {

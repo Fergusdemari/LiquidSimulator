@@ -1,4 +1,4 @@
-﻿using OpenTK;
+﻿  using OpenTK;
 using System;
 using template.Shapes;
 
@@ -7,7 +7,7 @@ namespace Template {
     public class FluidSim {
         int particleCount;
         //k is a coefficient basically for how dense the fluid is in general. Increasing k will make the particles act as if they represent a larger amount of fluid (box will appear more full)
-        float k = 1f;
+        float k = 0.1f;
         //how much the liquid stays together
         float viscosity = 1f;
         //a preference pressure value
@@ -57,7 +57,7 @@ namespace Template {
          **/
 
         public void calcDensity(Sphere p) {
-            float dense = 0;
+            float dense = 1f;
 
             int[] closePointInds = Game.neighborsIndicesConcatenated(p.Position);
             for (int i = 0; i < closePointInds.Length; i++) {
@@ -94,9 +94,11 @@ namespace Template {
         }
 
         public void calcBodyForce(Sphere p) {
-            Vector3 f = new Vector3(0, -9.81f * p.Mass, 0);
+            Vector3 f = new Vector3(0, Game.gravity * p.Mass, 0);
             // Console.WriteLine("gravity force: " + f);
+            // Maybe add force for walls here
             p.NetForce += f;
+            
         }
 
         /**
