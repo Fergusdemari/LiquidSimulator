@@ -57,17 +57,6 @@ namespace template.Shapes
 
         public void Update(double timeStep)
         {
-            Vector3 pos = Game.getPosition(Game.getParticleVoxelIndex(Position));
-
-            int[] neighbors = Game.neighborsIndicesConcatenated((int)pos.X, (int)pos.Y, (int)pos.Z);
-            if (ListIndex == 0)
-            {
-                color = new Vector3(1.0f, 0.4f, 0.7f);
-            }
-            for (int i = 0; i < neighbors.Length; i++)
-            {
-                Game.particles[neighbors[i]].color = new Vector3(0, 1.0f, 0);
-            }
             ResolveCollisions();
         }
 
@@ -99,8 +88,38 @@ namespace template.Shapes
         private void ResolveCollisions()
         {
             #region wallCollision
+
+            // For every wall check if the particle is hitting it and going toward the outside
+            if (Position.X < 0) {
+                Position = new Vector3(0, Position.Y, Position.Z);
+            }
+            if (Position.Y < 0) {
+                Position = new Vector3(Position.X, 0, Position.Z);
+            }
+            if (Position.Z < 0) {
+                Position = new Vector3(Position.X, Position.Y, 0);
+            }
+            if (Position.X >= Game.dim) {
+                Position = new Vector3(Game.dim-0.001f, Position.Y, Position.Z);
+            }
+            if (Position.Y >= Game.dim) {
+                Position = new Vector3(Position.X, Game.dim-0.001f, Position.Z);
+            }
+            if (Position.Z >= Game.dim) {
+                Position = new Vector3(Position.X, Position.Y, Game.dim-0.001f);
+            }
+            
             #endregion
 
+            // Interparticle Collision TODO
+            int[] neighbors = Game.neighborsIndicesConcatenated(Position);
+            for (int i = 0; i < neighbors.Length; i++) {
+                float dist = Game.getSquaredDistance(Position, Game.particles[i].Position);
+                if (dist < (Radius + Radius) * (Radius + Radius)) {
+                    // Resolve the collision
+
+                }
+            }
             // TODO Collision with fellow particles
         }
 

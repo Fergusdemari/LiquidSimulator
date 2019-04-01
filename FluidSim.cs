@@ -7,7 +7,7 @@ namespace Template {
     public class FluidSim {
         int particleCount;
         //k is a coefficient basically for how dense the fluid is in general. Increasing k will make the particles act as if they represent a larger amount of fluid (box will appear more full)
-        float k = 0.1f;
+        float k = 1f;
         //how much the liquid stays together
         float viscosity = 1f;
         //a preference pressure value
@@ -36,16 +36,17 @@ namespace Template {
             //calculate total force for every particle
             for (int i = 0; i < particleCount; i++) {
                 calcPresssureForce(Game.particles[i]);
-                calcViscosityForce(Game.particles[i]);
+                calcViscosityForce(Game.particles[i]);  
                 calcBodyForce(Game.particles[i]);
 
                 //Get the acceleration resulted from the force and integrate for position
                 Vector3 acceleration = Game.particles[i].NetForce / Game.particles[i].Density;
-                Game.particles[i].Velocity += acceleration * timeStep;
-                Game.particles[i].Position += Game.particles[i].Velocity * timeStep;
 
                 //calling update for a Sphere object now only checks for boundary collision
                 Game.particles[i].Update(timeStep);
+
+                Game.particles[i].Velocity += acceleration * timeStep;
+                Game.particles[i].Position += Game.particles[i].Velocity * timeStep;
             }
         }
 
@@ -111,9 +112,8 @@ namespace Template {
 
         //Poly6 kernel for distance weighting. used in calculating a particle's density
         public float Poly6WeightKernel(Vector3 x1, Vector3 x2) {
-            Vector3 x = x1 - x2;
-            float r = (x.X) * (x.X) + (x.Y) * (x.Y) + (x.Z) * (x.Z);
-            if (r < 0 || r > d) {
+            float r = Game.getDistance(x1, x2);
+            if (r > d) {
                 return 0.0f;
             }
 
@@ -122,9 +122,8 @@ namespace Template {
 
         //Spiky kernel for distance weighitng and vector gradient. used for calculating pressure force
         public Vector3 spikyPressureKernel(Vector3 x1, Vector3 x2) {
-            Vector3 x = x1 - x2;
-            float r = (x.X) * (x.X) + (x.Y) * (x.Y) + (x.Z) * (x.Z);
-            if (r < 0 || r > d) {
+            float r = Game.getDistance(x1, x2);
+            if (r > d) {
                 return new Vector3(0, 0, 0);
             }
 
@@ -133,9 +132,8 @@ namespace Template {
 
         //Laplacian kernel for distance weighitng and vector gradient. used forcalculating viscosit force
         public float laplacianKernel(Vector3 x1, Vector3 x2) {
-            Vector3 x = x1 - x2;
-            float r = (x.X) * (x.X) + (x.Y) * (x.Y) + (x.Z) * (x.Z);
-            if (r < 0 || r > d) {
+            float r = Game.getDistance(x1, x2);
+            if (r > d) {
                 return 0.0f;
             }
 
