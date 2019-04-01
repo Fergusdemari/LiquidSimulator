@@ -17,30 +17,33 @@ namespace Template
             CUBES,      //Displays the voxels they're in
             SHAPES      //Displays whatever shape we decided to give particles (tilted cube atm)
         }
-        public Mode displayMode = Mode.PARTICLES;
 
+        public Mode displayMode = Mode.SHAPES;
+        
         public static bool Recording = false;
-
+        public static bool random = false;
+        public bool running = false;
+        public bool step = false;
         // Currently it's all done within 0-1. If you want it to be 0-3, set dim to 3 (In case of rounding errors maybe?)
-        public static int dim = 1;
+        public static float dim = 1.0f;
 
         // divided by 1000 because idk
         public static float gravity = -9.81f;
         // Stepsize of each frame. Set to very tiny if you want it to look silky smooth
-        public float dt = 1.0f / 240f;
+        public float dt = 1.0f / 30f;
         
         //Debug showing
         bool showGrid = false;
         bool showBorders = true;
         // Keep threading false atm, issues with locking
-        private bool threading = false;
+        private bool threading = true;
 
         // Number of voxels in the grid per dimension
-        static int voxels = 128;
+        static int voxels = 64;
         // Size of one voxel
         static float voxelSize = (float)dim / voxels;
 
-        public static int numberOfPoints = 1000;
+        public static int numberOfPoints = 4000;
 
 
         public static Sphere[] particles = new Sphere[numberOfPoints];
@@ -66,7 +69,8 @@ namespace Template
             RestartScene(true);
 
             //start fluid simulator
-            simulator = new FluidSim(numberOfPoints, dt, particles);
+            simulator = new FluidSim(numberOfPoints, dt, particles, voxelSize);
+                        //int[] t = neighborsIndicesConcatenated();
         }
 
         /// <summary>
@@ -78,34 +82,38 @@ namespace Template
             // If set to threading, split the taskforce up, but if the amount of points is too small then there's no point
             if (threading && !(particles.Length < 100))
             {
-                int PPT = 10;
-                var options = new ParallelOptions()
-                {
-                    MaxDegreeOfParallelism = 8
-                };
-                Parallel.For(0, particles.Length / PPT, options, i =>
-                  {
-                      simulator.PropertiesUpdate(i * PPT, (i + 1) * PPT);
-                  });
-                Parallel.For(0, particles.Length / PPT, options, i =>
-                {
-                    simulator.ForcesUpdate(i * PPT, (i + 1) * PPT);
-                });
+                if(running || step){
+                    int PPT = 10;
+                    var options = new ParallelOptions()
+                    {
+                        MaxDegreeOfParallelism = 8
+                    };
+                    Parallel.For(0, particles.Length / PPT, options, i =>
+                      {
+                          simulator.PropertiesUpdate(i * PPT, (i + 1) * PPT);
+                      });
+                    Parallel.For(0, particles.Length / PPT, options, i =>
+                    {
+                        simulator.ForcesUpdate(i * PPT, (i + 1) * PPT);
+                    });
 
-                simulator.MovementUpdate();
+                    simulator.MovementUpdate();
 
-                for (int i = 0; i < particles.Length; i++)
-                {
-                    particles[i].Update(dt);
+                    for (int i = 0; i < particles.Length; i++)
+                    {
+                        particles[i].Update(dt);
+                    }
                 }
-
             }
             else
             {
                 //particles[i].Update(dt);
-                simulator.Update();
+                if(running || step){
+                    simulator.Update();
+                    step = false;
+                }
 
-            }
+            } 
         }
 
         /// <summary>
@@ -361,6 +369,7 @@ namespace Template
         public static int[] getNeighborIndices(int x, int y, int z, int radius = 1)
         {
             int[] res = new int[27];
+
             int counter = 0;
             for (int xi = -radius; xi <= radius; xi++)
             {
@@ -373,6 +382,7 @@ namespace Template
                     }
                 }
             }
+
             int validOnes = 0;
             for (int i = 0; i < res.Length; i++)
             {
@@ -526,37 +536,61 @@ namespace Template
         /// Respawns the balls and empties the grid lists
         /// </summary>
         /// <param name="sameSeed"> If set to true, the same seed as previous spawn will be used </param>
-        public static void RestartScene(bool sameSeed)
-        {
-            if (!sameSeed)
-            {
-                Random seedCreator = new Random();
-                RNGSeed = seedCreator.Next(int.MaxValue);
-                Console.WriteLine("RNGSeed has been rerolled to " + RNGSeed);
-            }
+        public static void RestartScene(bool sameSeed) {
+            if (random) { 
+                if (!sameSeed) {
+                    Random seedCreator = new Random();
+                    RNGSeed = seedCreator.Next(int.MaxValue);
+                    Console.WriteLine("RNGSeed has been rerolled to " + RNGSeed);
+                }
 
-            Console.Write("Setting up Grid...");
-            grid = new Dictionary<int, List<int>>();
-            particles = new Sphere[numberOfPoints];
-            // Creates the grid list empty
-            for (int i = 0; i < voxels * voxels * voxels; i++)
-            {
-                grid.Add(i, new List<int>());
-            }
-            Console.WriteLine(" Done.");
+                Console.Write("Setting up Grid...");
+                grid = new Dictionary<int, List<int>>();
+                particles = new Sphere[numberOfPoints];
+                // Creates the grid list empty
+                for (int i = 0; i < voxels * voxels * voxels; i++) {
+                    grid.Add(i, new List<int>());
+                }
+                Console.WriteLine(" Done.");
 
-            Console.Write("Generating particles...");
-            //Creates random points with random velocities
-            Random r = new Random();
-            for (int i = 0; i < particles.Length; i++)
-            {
-                particles[i] = new Sphere(i, new Vector3(((float)r.NextDouble() / 8 + 0.4375f * dim), ((float)r.NextDouble() / 4 * dim), ((float)r.NextDouble() / 8 + 0.4375f * dim)),
-                                       Vector3.Zero, 0.01f);
-                particles[i].color = particles[i].Position / dim;
-                particles[i].Mass = 0.3f;
-                particles[i].NetForce = new Vector3(0, 0, 0);
+                Console.Write("Generating particles...");
+                //Creates random points with random velocities
+                Random r = new Random(123123);
+                for (int i = 0; i < particles.Length; i++) {
+                    particles[i] = new Sphere(i, new Vector3(((float)r.NextDouble() / 8 + 0.4375f * dim), ((float)r.NextDouble() / 4 * dim), ((float)r.NextDouble() / 8 + 0.4375f * dim)),
+                                           Vector3.Zero, 0.01f);
+                    particles[i].color = particles[i].Position / dim;
+                    particles[i].Mass = 0.3f;
+                    particles[i].NetForce = new Vector3(0, 0, 0);
+                }
+                Console.WriteLine(" Done.");
             }
-            Console.WriteLine(" Done.");
+            else{
+                grid = new Dictionary<int, List<int>>();
+                particles = new Sphere[numberOfPoints];
+                for (int i = 0; i < voxels * voxels * voxels; i++) {
+                    grid.Add(i, new List<int>());
+                }
+                float step = dim/50;
+                int count = 0;
+                for(int i = 0; i <= numberOfPoints/100; i++){
+                    for(int j = 0; j < 50; j++){
+                        for(int k = 0; k < 50; k++) {
+                            if(count < numberOfPoints){
+                                particles[count] = new Sphere(count, new Vector3(step*i, step*k+step/2, step*j+step/2), Vector3.Zero, 0.01f);
+                                particles[count].color = new Vector3(0.5f, 0, 0);
+                                particles[count].Mass = 0.3f;
+                                particles[count].NetForce = new Vector3(0, 0, 0);
+                                if((k == 0 && j == 0 && i == 0) || (k == 9 && j == 9 && i == 0))
+                                {
+                                    particles[count].verbose = false;
+                                }
+                            }
+                            count++;
+                        }
+                    }
+                }
+            }
         }
     }
 }

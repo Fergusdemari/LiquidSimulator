@@ -204,6 +204,21 @@ namespace Template
                 position += new Vector3(0, translationSpeed, 0);
             }
 
+            if (keyboard[OpenTK.Input.Key.L])
+            {
+                game.step = true;
+            }
+
+            if (keyboard[OpenTK.Input.Key.Space])
+            {
+                if (game.running) { 
+                    game.running = false;
+                }else { 
+                    game.running = true;
+                }
+
+            }
+
             //if (keyboard[OpenTK.Input.Key.I])
             //{
             //    VideoMaker.Start();
