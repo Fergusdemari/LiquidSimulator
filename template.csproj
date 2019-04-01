@@ -90,7 +90,7 @@
   <ItemGroup>
     <Compile Include="FluidSim.cs" />
     <Compile Include="game.cs" />
-    <Compile Include="Shapes\Sphere.cs" />
+    <Compile Include="Sphere.cs" />
     <Compile Include="surface.cs" />
     <Compile Include="template.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

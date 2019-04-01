@@ -25,29 +25,84 @@ namespace Template {
             //set up particles
         }
 
-        public void update() {
+        public void Update(int startIndex=-1, int stopIndex=-1) {
+
+            // So you can call the Update function without parameters
+            if (startIndex == -1 && stopIndex == -1)
+            {
+                startIndex = 0;
+                stopIndex = Game.particles.Length;
+            }
+
+            // Updates density and pressure
+            PropertiesUpdate(startIndex, stopIndex);
+
+            //calculate total force for every particle
+            ForcesUpdate(startIndex, stopIndex);
+
+            //updates the movement
+            MovementUpdate(startIndex, stopIndex);
+
+            for (int i = startIndex; i < stopIndex; i++)
+            {
+                Game.particles[i].Update(timeStep);
+            }
+        }
+
+        public void PropertiesUpdate(int startIndex = -1, int stopIndex = -1)
+        {
+            // So you can call the Update function without parameters
+            if (startIndex == -1 && stopIndex == -1)
+            {
+                startIndex = 0;
+                stopIndex = Game.particles.Length;
+            }
+
             //loop through each particle and find it's density and pressure
-            for (int i = 0; i < particleCount; i++) {
+            for (int i = startIndex; i < stopIndex; i++)
+            {
                 Game.particles[i].NetForce = new Vector3(0, 0, 0);
                 calcDensity(Game.particles[i]);
                 calcPressure(Game.particles[i]);
             }
+        }
 
-            //calculate total force for every particle
-            for (int i = 0; i < particleCount; i++) {
+        public void ForcesUpdate(int startIndex = -1, int stopIndex = -1)
+        {
+            // So you can call the Update function without parameters
+            if (startIndex == -1 && stopIndex == -1)
+            {
+                startIndex = 0;
+                stopIndex = Game.particles.Length;
+            }
+
+            for (int i = startIndex; i < stopIndex; i++)
+            {
                 calcPresssureForce(Game.particles[i]);
-                calcViscosityForce(Game.particles[i]);  
+                calcViscosityForce(Game.particles[i]);
                 calcBodyForce(Game.particles[i]);
 
                 //Get the acceleration resulted from the force and integrate for position
+               
+            }
+        }
+
+        public void MovementUpdate(int startIndex=-1, int stopIndex=-1)
+        {
+            // So you can call the Update function without parameters
+            if (startIndex == -1 && stopIndex == -1)
+            {
+                startIndex = 0;
+                stopIndex = Game.particles.Length;
+            }
+
+            for (int i = startIndex; i < stopIndex; i++)
+            {
                 Vector3 acceleration = Game.particles[i].NetForce / Game.particles[i].Density;
-
-                //calling update for a Sphere object now only checks for boundary collision
-                Game.particles[i].Update(timeStep);
-
                 Game.particles[i].Velocity += acceleration * timeStep;
                 Game.particles[i].Position += Game.particles[i].Velocity * timeStep;
             }
+
         }
 
         /**

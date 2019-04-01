@@ -2,19 +2,23 @@
 using OpenTK.Graphics.OpenGL;
 using System;
 using System.Collections.Generic;
+using System.Threading;
 using System.Threading.Tasks;
 using template.Shapes;
 
-namespace Template {
+namespace Template
+{
 
-    class Game {
-        public enum Mode {
+    class Game
+    {
+        public enum Mode
+        {
             PARTICLES,  //Displays them as points
             CUBES,      //Displays the voxels they're in
             SHAPES      //Displays whatever shape we decided to give particles (tilted cube atm)
         }
         public Mode displayMode = Mode.PARTICLES;
-        
+
         public static bool Recording = false;
 
         // Currently it's all done within 0-1. If you want it to be 0-3, set dim to 3 (In case of rounding errors maybe?)
@@ -50,7 +54,8 @@ namespace Template {
         public FluidSim simulator;
 
         // initialize
-        public void Init() {
+        public void Init()
+        {
             // Just some seed code to keep the same seed during the same run
             Random seedCreator = new Random();
             RNGSeed = seedCreator.Next(int.MaxValue);
@@ -68,28 +73,55 @@ namespace Template {
         /// One update, ran every like 1/120 seconds
         /// </summary>
         /// <param name="e"></param>
-        public void Tick(FrameEventArgs e) {
+        public void Tick(FrameEventArgs e)
+        {
             // If set to threading, split the taskforce up, but if the amount of points is too small then there's no point
-            if (threading && !(particles.Length < 100)) {
+            if (threading && !(particles.Length < 100))
+            {
+                int PPT = 10;
+                var options = new ParallelOptions()
+                {
+                    MaxDegreeOfParallelism = 8
+                };
+                Parallel.For(0, particles.Length / PPT, options, i =>
+                  {
+                      simulator.PropertiesUpdate(i * PPT, (i + 1) * PPT);
+                  });
+                Parallel.For(0, particles.Length / PPT, options, i =>
+                {
+                    simulator.ForcesUpdate(i * PPT, (i + 1) * PPT);
+                });
 
-            } else {
-                    //particles[i].Update(dt);
-                    simulator.update();
-                
+                simulator.MovementUpdate();
+
+                for (int i = 0; i < particles.Length; i++)
+                {
+                    particles[i].Update(dt);
+                }
+
+            }
+            else
+            {
+                //particles[i].Update(dt);
+                simulator.Update();
+
             }
         }
 
         /// <summary>
         /// Does the logic of what to draw
         /// </summary>
-        public void RenderGL() {
+        public void RenderGL()
+        {
             //Different displaymodes
-            switch (displayMode) {
+            switch (displayMode)
+            {
                 case Mode.PARTICLES:
                     GL.Begin(PrimitiveType.Points);
                     GL.Color3(1.0f, 1.0f, 1f);
                     // Drawing of all spheres
-                    for (int i = 0; i < particles.Length; i++) {
+                    for (int i = 0; i < particles.Length; i++)
+                    {
                         GL.Vertex3(particles[i].Position);
                     }
                     GL.End();
@@ -98,8 +130,10 @@ namespace Template {
                     GL.Begin(PrimitiveType.Triangles);
                     GL.Color4(0.1f, 0.1, 1f, 1f);
                     /// Drawing of voxels when not empty
-                    for (int i = 0; i < voxels * voxels * voxels; i++) {
-                        if (grid[i].Count > 0) {
+                    for (int i = 0; i < voxels * voxels * voxels; i++)
+                    {
+                        if (grid[i].Count > 0)
+                        {
                             drawVoxel(i);
                         }
                     }
@@ -110,9 +144,11 @@ namespace Template {
                     GL.PointSize(2000);
                     GL.Color3(1.0f, 1.0f, 1.0f);
                     // Drawing of all spheres
-                    for (int i = 0; i < particles.Length; i++) {
+                    for (int i = 0; i < particles.Length; i++)
+                    {
                         Vector3[] shape = particles[i].getShape();
-                        for (int j = 0; j < shape.Length; j++) {
+                        for (int j = 0; j < shape.Length; j++)
+                        {
                             GL.Vertex3(shape[j]);
                         }
                     }
@@ -120,10 +156,12 @@ namespace Template {
                     break;
 
             }
-            if (showGrid) {
+            if (showGrid)
+            {
                 drawGrid();
             }
-            if (showBorders) {
+            if (showBorders)
+            {
                 drawBorders();
             }
 
@@ -132,19 +170,23 @@ namespace Template {
 
         #region Distancefunctions and their overloads
         // gets distance from indices in pointList
-        public static float getSquaredDistance(int i, int j) {
+        public static float getSquaredDistance(int i, int j)
+        {
             return getSquaredDistance(particles[i].Position, particles[j].Position);
         }
 
-        public static float getDistance(Vector3 a, Vector3 b) {
+        public static float getDistance(Vector3 a, Vector3 b)
+        {
             return (float)Math.Sqrt(getSquaredDistance(a, b));
         }
 
-        public static float getDistance(int i, int j) {
+        public static float getDistance(int i, int j)
+        {
             return (float)Math.Sqrt(getSquaredDistance(i, j));
         }
         // gets distance from Points
-        public static float getSquaredDistance(Vector3 a, Vector3 b) {
+        public static float getSquaredDistance(Vector3 a, Vector3 b)
+        {
             float deltaX = a.X - b.X;
             float deltaY = a.Y - b.Y;
             float deltaZ = a.Z - b.Z;
@@ -157,7 +199,8 @@ namespace Template {
         /// <summary>
         /// Draws just the borders surrounding the area, very useful
         /// </summary>
-        private void drawBorders() {
+        private void drawBorders()
+        {
             GL.Begin(PrimitiveType.Lines);
             GL.PointSize(1);
             GL.Color3(0.5f, 0, 0.5f);
@@ -198,25 +241,32 @@ namespace Template {
         /// <summary>
         /// Draws outline of every voxel
         /// </summary>
-        public void drawGrid() {
+        public void drawGrid()
+        {
             GL.Begin(PrimitiveType.Lines);
             GL.PointSize(1);
             GL.Color3(0.5f, 0.5f, 0.5f);
 
             float inv = (float)dim / voxels;
-            for (float x = 0; x <= dim; x += inv) {
-                for (float y = 0; y <= dim; y += inv) {
-                    for (float z = 0; z <= dim; z += inv) {
-                        if (x + inv <= dim) {
+            for (float x = 0; x <= dim; x += inv)
+            {
+                for (float y = 0; y <= dim; y += inv)
+                {
+                    for (float z = 0; z <= dim; z += inv)
+                    {
+                        if (x + inv <= dim)
+                        {
                             GL.Vertex3(x, y, z);
                             GL.Vertex3(x + inv, y, z);
                         }
-                        if (y + inv <= dim) {
+                        if (y + inv <= dim)
+                        {
                             GL.Vertex3(x, y, z);
                             GL.Vertex3(x, y + inv, z);
                         }
 
-                        if (z + inv <= dim) {
+                        if (z + inv <= dim)
+                        {
                             GL.Vertex3(x, y, z);
                             GL.Vertex3(x, y, z + inv);
                         }
@@ -236,7 +286,8 @@ namespace Template {
         /// Given a Vector with values between [0, 1], return the index of the voxel that point is in.
         /// </summary>
         /// <returns>The correct index, otherwise -2</returns>
-        public static int getParticleVoxelIndex(Vector3 p) {
+        public static int getParticleVoxelIndex(Vector3 p)
+        {
             // Scale from [0, 1] to [0, #voxels]
             p *= voxels;
             int x = (int)p.X;
@@ -245,9 +296,12 @@ namespace Template {
 
             // If the xyz coordinates are outside the total cube, return -2
             if (x < 0 || y < 0 || z < 0 ||
-                x >= voxels || y >= voxels || z >= voxels) {
+                x >= voxels || y >= voxels || z >= voxels)
+            {
                 return -2;
-            } else {
+            }
+            else
+            {
                 return x + y * voxels + z * voxels * voxels;
             }
         }
@@ -257,7 +311,8 @@ namespace Template {
         /// </summary>
         /// <param name="Position"></param>
         /// <returns></returns>
-        public static int[] neighborsIndicesConcatenated(Vector3 Position) {
+        public static int[] neighborsIndicesConcatenated(Vector3 Position)
+        {
             int x = (int)(Position.X * voxels);
             int y = (int)(Position.Y * voxels);
             int z = (int)(Position.Z * voxels);
@@ -271,22 +326,26 @@ namespace Template {
         /// </summary>
         /// <param name="voxels"></param>
         /// <returns></returns>
-        public static int[] neighborsIndicesConcatenated(int x, int y, int z) {
+        public static int[] neighborsIndicesConcatenated(int x, int y, int z)
+        {
             int[] voxels = getNeighborIndices(x, y, z);
 
             //Gets how many particles there are in total in all the neighbors
             int total = 0;
-            for (int i = 0; i < voxels.Length; i++) {
+            for (int i = 0; i < voxels.Length; i++)
+            {
                 total += grid[voxels[i]].Count;
             }
 
-
-            //Copy indices into the new list
+            //Copy spheres into the new list
             int[] res = new int[total];
             int counter = 0;
-            for (int i = 0; i < voxels.Length; i++) {
-                for (int j = 0; j < grid[voxels[i]].Count; j++) {
+            for (int i = 0; i < voxels.Length; i++)
+            {
+                for (int j = 0; j < grid[voxels[i]].Count; j++)
+                {
                     res[counter] = grid[voxels[i]][j];
+                    counter++;
                 }
             }
             return res;
@@ -299,27 +358,35 @@ namespace Template {
         /// <param name="y">Value between 0 and #voxels</param>
         /// <param name="z">Value between 0 and #voxels</param>
         /// <returns>Returns a list of the indices of all neighbor voxels. The indices are the ones used in Grid</returns>
-        public static int[] getNeighborIndices(int x, int y, int z, int radius = 1) {
+        public static int[] getNeighborIndices(int x, int y, int z, int radius = 1)
+        {
             int[] res = new int[27];
             int counter = 0;
-            for (int xi = -radius; xi <= radius; xi++) {
-                for (int yi = -radius; yi <= radius; yi++) {
-                    for (int zi = -radius; zi <= radius; zi++) {
+            for (int xi = -radius; xi <= radius; xi++)
+            {
+                for (int yi = -radius; yi <= radius; yi++)
+                {
+                    for (int zi = -radius; zi <= radius; zi++)
+                    {
                         res[counter] = getVoxelIndex(x + xi, y + yi, z + zi);
                         counter++;
                     }
                 }
             }
             int validOnes = 0;
-            for (int i = 0; i < res.Length; i++) {
-                if (res[i] >= 0 && res[i] <voxels*voxels*voxels) {
+            for (int i = 0; i < res.Length; i++)
+            {
+                if (res[i] >= 0 && res[i] < voxels * voxels * voxels)
+                {
                     validOnes++;
                 }
             }
             int[] res2 = new int[validOnes];
             int counter1 = 0;
-            for (int i = 0; i < res.Length; i++) {
-                if (res[i] >= 0 && res[i] < voxels * voxels * voxels) {
+            for (int i = 0; i < res.Length; i++)
+            {
+                if (res[i] >= 0 && res[i] < voxels * voxels * voxels)
+                {
                     res2[counter1] = res[i];
                     counter1++;
                 }
@@ -332,7 +399,8 @@ namespace Template {
         /// </summary>
         /// <param name="i"> Index in voxel grid</param>
         /// <returns></returns>
-        public static int[] getNeighborIndices(int i) {
+        public static int[] getNeighborIndices(int i)
+        {
             Vector3 position = getPosition(i);
             int x = (int)position.X;
             int y = (int)position.Y;
@@ -347,7 +415,8 @@ namespace Template {
         /// <param name="y"></param>
         /// <param name="z"></param>
         /// <returns>Returns the idnex of a voxel, and -2 if it's not in the grid </returns>
-        private static int getVoxelIndex(int x, int y, int z) {
+        private static int getVoxelIndex(int x, int y, int z)
+        {
             // If one is below 0, it's not in the grid
             if (x < 0 || y < 0 || z < 0)
                 return -2;
@@ -364,7 +433,8 @@ namespace Template {
         /// <summary>
         /// Gets the grid's position vector based on it's index in Grid
         /// </summary>
-        public static Vector3 getPosition(int i) {
+        public static Vector3 getPosition(int i)
+        {
             int temp = i;
             int z = temp / (voxels * voxels);
             temp -= z * voxels * voxels;
@@ -379,7 +449,8 @@ namespace Template {
         /// Draws a voxel of the grid using it's index
         /// </summary>
         /// <param name="i"></param>
-        public void drawVoxel(int i) {
+        public void drawVoxel(int i)
+        {
             Vector3 pos = getPosition(i);
 
 
@@ -441,7 +512,8 @@ namespace Template {
         /// <summary>
         /// Prints instructions at the start
         /// </summary>
-        private void printInstructions() {
+        private void printInstructions()
+        {
             Console.WriteLine("[R]         - Reset the Camera");
             Console.WriteLine("[1]         - Respawn the particles with the same seed as last time");
             Console.WriteLine("[2]         - Respawn the particles with a new seed");
@@ -454,8 +526,10 @@ namespace Template {
         /// Respawns the balls and empties the grid lists
         /// </summary>
         /// <param name="sameSeed"> If set to true, the same seed as previous spawn will be used </param>
-        public static void RestartScene(bool sameSeed) {
-            if (!sameSeed) {
+        public static void RestartScene(bool sameSeed)
+        {
+            if (!sameSeed)
+            {
                 Random seedCreator = new Random();
                 RNGSeed = seedCreator.Next(int.MaxValue);
                 Console.WriteLine("RNGSeed has been rerolled to " + RNGSeed);
@@ -465,15 +539,17 @@ namespace Template {
             grid = new Dictionary<int, List<int>>();
             particles = new Sphere[numberOfPoints];
             // Creates the grid list empty
-            for (int i = 0; i < voxels * voxels * voxels; i++) {
+            for (int i = 0; i < voxels * voxels * voxels; i++)
+            {
                 grid.Add(i, new List<int>());
             }
             Console.WriteLine(" Done.");
 
             Console.Write("Generating particles...");
             //Creates random points with random velocities
-            Random r = new Random(123123);
-            for (int i = 0; i < particles.Length; i++) {
+            Random r = new Random();
+            for (int i = 0; i < particles.Length; i++)
+            {
                 particles[i] = new Sphere(i, new Vector3(((float)r.NextDouble() / 8 + 0.4375f * dim), ((float)r.NextDouble() / 4 * dim), ((float)r.NextDouble() / 8 + 0.4375f * dim)),
                                        Vector3.Zero, 0.01f);
                 particles[i].color = particles[i].Position / dim;

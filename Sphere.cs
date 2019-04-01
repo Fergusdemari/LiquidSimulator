@@ -90,32 +90,40 @@ namespace template.Shapes
             #region wallCollision
 
             // For every wall check if the particle is hitting it and going toward the outside
-            if (Position.X < 0) {
+            if (Position.X < 0)
+            {
                 Position = new Vector3(0, Position.Y, Position.Z);
             }
-            if (Position.Y < 0) {
+            if (Position.Y < 0)
+            {
                 Position = new Vector3(Position.X, 0, Position.Z);
             }
-            if (Position.Z < 0) {
+            if (Position.Z < 0)
+            {
                 Position = new Vector3(Position.X, Position.Y, 0);
             }
-            if (Position.X >= Game.dim) {
-                Position = new Vector3(Game.dim-0.001f, Position.Y, Position.Z);
+            if (Position.X >= Game.dim)
+            {
+                Position = new Vector3(Game.dim - 0.001f, Position.Y, Position.Z);
             }
-            if (Position.Y >= Game.dim) {
-                Position = new Vector3(Position.X, Game.dim-0.001f, Position.Z);
+            if (Position.Y >= Game.dim)
+            {
+                Position = new Vector3(Position.X, Game.dim - 0.001f, Position.Z);
             }
-            if (Position.Z >= Game.dim) {
-                Position = new Vector3(Position.X, Position.Y, Game.dim-0.001f);
+            if (Position.Z >= Game.dim)
+            {
+                Position = new Vector3(Position.X, Position.Y, Game.dim - 0.001f);
             }
-            
+
             #endregion
 
             // Interparticle Collision TODO
             int[] neighbors = Game.neighborsIndicesConcatenated(Position);
-            for (int i = 0; i < neighbors.Length; i++) {
+            for (int i = 0; i < neighbors.Length; i++)
+            {
                 float dist = Game.getSquaredDistance(Position, Game.particles[i].Position);
-                if (dist < (Radius + Radius) * (Radius + Radius)) {
+                if (dist < (Radius + Radius) * (Radius + Radius))
+                {
                     // Resolve the collision
 
                 }
