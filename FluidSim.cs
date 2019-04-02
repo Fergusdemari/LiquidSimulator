@@ -1,15 +1,16 @@
-﻿  using OpenTK;
+﻿using OpenTK;
 using System;
 using template.Shapes;
+using System.Collections.Generic;
 
 namespace Template {
 
     public class FluidSim {
         int particleCount;
         //k is a coefficient basically for how dense the fluid is in general. Increasing k will make the particles act as if they represent a larger amount of fluid (box will appear more full)
-        float k = 0.5f;
+        float k = 0.8f;
         //how much the liquid stays together
-        float viscosity = 2.0f;
+        float viscosity = 1.0f;
         //a preference pressure value
         float p0 = 1.0f;
         //radius which is the cutoff for the kernels. Particle is only affected by other particles within this radius
@@ -52,7 +53,7 @@ namespace Template {
             if (startIndex == -1 && stopIndex == -1)
             {
                 startIndex = 0;
-                stopIndex = Game.particles.Length;
+                stopIndex = Game.currentPoints;
             }
 
             // Updates density and pressure
@@ -76,7 +77,7 @@ namespace Template {
             if (startIndex == -1 && stopIndex == -1)
             {
                 startIndex = 0;
-                stopIndex = Game.particles.Length;
+                stopIndex = Game.currentPoints;
             }
 
             //loop through each particle and find it's density and pressure
@@ -95,7 +96,7 @@ namespace Template {
             if (startIndex == -1 && stopIndex == -1)
             {
                 startIndex = 0;
-                stopIndex = Game.particles.Length;
+                stopIndex = Game.currentPoints;
             }
 
             for (int i = startIndex; i < stopIndex; i++)
@@ -124,7 +125,7 @@ namespace Template {
             if (startIndex == -1 && stopIndex == -1)
             {
                 startIndex = 0;
-                stopIndex = Game.particles.Length;
+                stopIndex = Game.currentPoints;
             }
 
             for (int i = startIndex; i < stopIndex; i++)

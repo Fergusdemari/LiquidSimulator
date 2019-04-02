@@ -8,6 +8,15 @@ using template.Shapes;
 
 namespace Template
 {
+    struct Emitter
+    {
+        public Vector3 position;
+        public float radius;
+        public int emissionRate;
+        public int delay;
+        public int tickCounter;
+        public Vector3 velocity;
+    }
 
     class Game
     {
@@ -43,8 +52,10 @@ namespace Template
         // Size of one voxel
         static float voxelSize = (float)dim / voxels;
 
-        public static int numberOfPoints = 4000;
+        public static int numberOfPoints = 3000;
+        public static int currentPoints = 0;
 
+        public Emitter[] emitters;
 
         public static Sphere[] particles = new Sphere[numberOfPoints];
         public static Dictionary<int, List<int>> grid = new Dictionary<int, List<int>>();
@@ -66,7 +77,21 @@ namespace Template
 
             printInstructions();
             //Creates random points with random velocities
-            RestartScene(true);
+            grid = new Dictionary<int, List<int>>();
+            for (int i = 0; i < voxels * voxels * voxels; i++) {
+                    grid.Add(i, new List<int>());
+            }
+            emitters = new Emitter[1];
+            emitters[0] = new Emitter();
+            emitters[0].position = new Vector3(0.0f, 0.95f, 0.5f);
+            emitters[0].radius = 0.05f;
+            emitters[0].velocity = new Vector3(0.3f, 0.0f, 0.01f);
+            emitters[0].emissionRate = 5;
+            emitters[0].delay = 4;
+            emitters[0].tickCounter = 0;
+
+            
+            //RestartScene(true);
 
             //start fluid simulator
             simulator = new FluidSim(numberOfPoints, dt, particles, voxelSize);
@@ -79,6 +104,28 @@ namespace Template
         /// <param name="e"></param>
         public void Tick(FrameEventArgs e)
         {
+            Random r = new Random();
+            if(currentPoints < numberOfPoints && (running || step)){
+                for(int i = 0; i < emitters.Length; i++){
+                    if(emitters[i].tickCounter == 0){
+                        for(int j = 0; j < emitters[i].emissionRate; j++){
+                            float rad = (float)Math.Sqrt(r.NextDouble()) * emitters[i].radius;
+                            float angle = (float)r.NextDouble() * (float)Math.PI * 2;
+                            Vector3 pos = new Vector3(emitters[i].position.X, emitters[i].position.Y + rad * (float)Math.Cos(angle), emitters[i].position.Z + rad * (float)Math.Sin(angle));
+                          
+                            particles[currentPoints] = (new Sphere(currentPoints, pos, emitters[i].velocity, 0.01f));
+                            particles[currentPoints].color = new Vector3(0.5f, 0, 0);
+                            particles[currentPoints].Mass = 0.3f;
+                            particles[currentPoints].NetForce = new Vector3(0, 0, 0);
+                            currentPoints++;
+                        }
+                    }
+                    emitters[i].tickCounter++;
+                    if(emitters[i].tickCounter > emitters[i].delay){
+                        emitters[i].tickCounter = 0;
+                    }
+                }
+            }
             // If set to threading, split the taskforce up, but if the amount of points is too small then there's no point
             if (threading && !(particles.Length < 100))
             {
@@ -88,21 +135,22 @@ namespace Template
                     {
                         MaxDegreeOfParallelism = 8
                     };
-                    Parallel.For(0, particles.Length / PPT, options, i =>
+                    Parallel.For(0, currentPoints / PPT, options, i =>
                       {
                           simulator.PropertiesUpdate(i * PPT, (i + 1) * PPT);
                       });
-                    Parallel.For(0, particles.Length / PPT, options, i =>
+                    Parallel.For(0, currentPoints / PPT, options, i =>
                     {
                         simulator.ForcesUpdate(i * PPT, (i + 1) * PPT);
                     });
 
                     simulator.MovementUpdate();
 
-                    for (int i = 0; i < particles.Length; i++)
+                    for (int i = 0; i < currentPoints; i++)
                     {
                         particles[i].Update(dt);
                     }
+                    step = false;
                 }
             }
             else
@@ -152,7 +200,7 @@ namespace Template
                     GL.PointSize(2000);
                     GL.Color3(1.0f, 1.0f, 1.0f);
                     // Drawing of all spheres
-                    for (int i = 0; i < particles.Length; i++)
+                    for (int i = 0; i < currentPoints; i++)
                     {
                         Vector3[] shape = particles[i].getShape();
                         for (int j = 0; j < shape.Length; j++)
@@ -557,7 +605,7 @@ namespace Template
                 //Creates random points with random velocities
                 Random r = new Random(123123);
                 for (int i = 0; i < particles.Length; i++) {
-                    particles[i] = new Sphere(i, new Vector3(((float)r.NextDouble() / 8 + 0.4375f * dim), ((float)r.NextDouble() / 4 * dim), ((float)r.NextDouble() / 8 + 0.4375f * dim)),
+                    particles[i] =  new Sphere(i, new Vector3(((float)r.NextDouble() / 8 + 0.4375f * dim), ((float)r.NextDouble() / 4 * dim), ((float)r.NextDouble() / 8 + 0.4375f * dim)),
                                            Vector3.Zero, 0.01f);
                     particles[i].color = particles[i].Position / dim;
                     particles[i].Mass = 0.3f;

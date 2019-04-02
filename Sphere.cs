@@ -19,7 +19,7 @@ namespace template.Shapes
         public float Density;
         public float Pressure;
         public bool verbose = false;
-        public float damping = 10; 
+        public float damping = 2; 
         public Vector3 normal;
         // Meta info
         public int ListIndex;
@@ -100,7 +100,7 @@ namespace template.Shapes
             if (Position.Y < 0)
             {
                 Position = new Vector3(Position.X, 0, Position.Z);
-                Velocity = new Vector3(Velocity.X, -1*Velocity.Y, Velocity.Z);
+                Velocity = new Vector3(Velocity.X, -1*Velocity.Y/damping, Velocity.Z);
             }
             if (Position.Z < 0)
             {
