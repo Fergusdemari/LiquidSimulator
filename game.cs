@@ -27,7 +27,7 @@ namespace Template
             SHAPES      //Displays whatever shape we decided to give particles (tilted cube atm)
         }
 
-        public Mode displayMode = Mode.SHAPES;
+        public Mode displayMode = Mode.PARTICLES;
         
         public static bool Recording = false;
         public static bool random = false;
@@ -39,7 +39,7 @@ namespace Template
         // divided by 1000 because idk
         public static float gravity = -9.81f;
         // Stepsize of each frame. Set to very tiny if you want it to look silky smooth
-        public float dt = 1.0f / 30f;
+        public float dt = 1.0f / 25f;
         
         //Debug showing
         bool showGrid = false;
@@ -48,11 +48,14 @@ namespace Template
         private bool threading = true;
 
         // Number of voxels in the grid per dimension
-        static int voxels = 64;
-        // Size of one voxel
+        static int voxels = 32;
+        static int visualisationVoxels = 32;
+        bool[] visualisationVoxelSwitches = new bool[visualisationVoxels * visualisationVoxels * visualisationVoxels];
+        // Size of one voxele
+        static float visVoxelSize = (float)dim/visualisationVoxels;
         static float voxelSize = (float)dim / voxels;
 
-        public static int numberOfPoints = 3000;
+        public static int numberOfPoints = 1000;
         public static int currentPoints = 0;
 
         public Emitter[] emitters;
@@ -81,17 +84,17 @@ namespace Template
             for (int i = 0; i < voxels * voxels * voxels; i++) {
                     grid.Add(i, new List<int>());
             }
-            emitters = new Emitter[1];
-            emitters[0] = new Emitter();
-            emitters[0].position = new Vector3(0.0f, 0.95f, 0.5f);
-            emitters[0].radius = 0.05f;
-            emitters[0].velocity = new Vector3(0.3f, 0.0f, 0.01f);
-            emitters[0].emissionRate = 5;
-            emitters[0].delay = 4;
-            emitters[0].tickCounter = 0;
+            emitters = new Emitter[0];
+            //emitters[0] = new Emitter();
+            //emitters[0].position = new Vector3(0.0f, 0.95f, 0.5f);
+            //emitters[0].radius = 0.1f;
+            //emitters[0].velocity = new Vector3(0.4f, -0.2f, 0.01f);
+            //emitters[0].emissionRate = 5;
+            //emitters[0].delay = 5;
+            //emitters[0].tickCounter = 0;
 
             
-            //RestartScene(true);
+            RestartScene(true);
 
             //start fluid simulator
             simulator = new FluidSim(numberOfPoints, dt, particles, voxelSize);
@@ -114,8 +117,8 @@ namespace Template
                             Vector3 pos = new Vector3(emitters[i].position.X, emitters[i].position.Y + rad * (float)Math.Cos(angle), emitters[i].position.Z + rad * (float)Math.Sin(angle));
                           
                             particles[currentPoints] = (new Sphere(currentPoints, pos, emitters[i].velocity, 0.01f));
-                            particles[currentPoints].color = new Vector3(0.5f, 0, 0);
-                            particles[currentPoints].Mass = 0.3f;
+                            particles[currentPoints].color = new Vector3(1.0f, 0, 0);
+                            particles[currentPoints].Mass = 1.0f;
                             particles[currentPoints].NetForce = new Vector3(0, 0, 0);
                             currentPoints++;
                         }
@@ -130,12 +133,12 @@ namespace Template
             if (threading && !(particles.Length < 100))
             {
                 if(running || step){
-                    int PPT = 10;
+                    int PPT = 8;
                     var options = new ParallelOptions()
                     {
                         MaxDegreeOfParallelism = 8
                     };
-                    Parallel.For(0, currentPoints / PPT, options, i =>
+                     Parallel.For(0, currentPoints / PPT, options, i =>
                       {
                           simulator.PropertiesUpdate(i * PPT, (i + 1) * PPT);
                       });
@@ -143,12 +146,16 @@ namespace Template
                     {
                         simulator.ForcesUpdate(i * PPT, (i + 1) * PPT);
                     });
-
                     simulator.MovementUpdate();
-
                     for (int i = 0; i < currentPoints; i++)
                     {
                         particles[i].Update(dt);
+                    }
+                    if(displayMode == Mode.CUBES){
+                    Parallel.For(0, (visualisationVoxels * visualisationVoxels * visualisationVoxels) / PPT, options, i =>
+                    {
+                        calcVoxelDensities(i * PPT, (i + 1) * PPT);
+                    });
                     }
                     step = false;
                 }
@@ -165,6 +172,23 @@ namespace Template
         }
 
         /// <summary>
+        /// Calculates a density value for each voxel to decide whether it should be drawn
+        /// </summary>
+        public void calcVoxelDensities(int start, int end){
+            for (int i = start; i < end; i++){
+                Vector3 position = getVisPosition(i);
+                position += new Vector3(visVoxelSize/2.0f, visVoxelSize/2.0f, visVoxelSize/2.0f);
+                float density = FluidSim.calcDensity(position);
+                if(density > 20.0){
+                    //Console.WriteLine(position + " " + density);
+                    visualisationVoxelSwitches[i] = true;
+                }else{
+                    visualisationVoxelSwitches[i] = false;
+                }
+            }
+        }
+
+        /// <summary>
         /// Does the logic of what to draw
         /// </summary>
         public void RenderGL()
@@ -176,7 +200,7 @@ namespace Template
                     GL.Begin(PrimitiveType.Points);
                     GL.Color3(1.0f, 1.0f, 1f);
                     // Drawing of all spheres
-                    for (int i = 0; i < particles.Length; i++)
+                    for (int i = 0; i < currentPoints; i++)
                     {
                         GL.Vertex3(particles[i].Position);
                     }
@@ -186,10 +210,9 @@ namespace Template
                     GL.Begin(PrimitiveType.Triangles);
                     GL.Color4(0.1f, 0.1, 1f, 1f);
                     /// Drawing of voxels when not empty
-                    for (int i = 0; i < voxels * voxels * voxels; i++)
+                    for (int i = 0; i < visualisationVoxels * visualisationVoxels * visualisationVoxels; i++)
                     {
-                        if (grid[i].Count > 0)
-                        {
+                        if(visualisationVoxelSwitches[i]){
                             drawVoxel(i);
                         }
                     }
@@ -198,13 +221,13 @@ namespace Template
                 case Mode.SHAPES:
                     GL.Begin(PrimitiveType.Triangles);
                     GL.PointSize(2000);
-                    GL.Color3(1.0f, 1.0f, 1.0f);
                     // Drawing of all spheres
                     for (int i = 0; i < currentPoints; i++)
                     {
                         Vector3[] shape = particles[i].getShape();
                         for (int j = 0; j < shape.Length; j++)
                         {
+                            GL.Color3(particles[i].color.X, particles[i].color.Y, particles[i].color.Z);
                             GL.Vertex3(shape[j]);
                         }
                     }
@@ -501,6 +524,17 @@ namespace Template
             int x = temp;
             return new Vector3(x * voxelSize, y * voxelSize, z * voxelSize);
         }
+
+        public static Vector3 getVisPosition(int i)
+        {
+            int temp = i;
+            int z = temp / (visualisationVoxels * visualisationVoxels);
+            temp -= z * visualisationVoxels * visualisationVoxels;
+            int y = temp / visualisationVoxels;
+            temp -= y * visualisationVoxels;
+            int x = temp;
+            return new Vector3(x * visVoxelSize, y * visVoxelSize, z * visVoxelSize);
+        }
         #endregion
 
         /// <summary>
@@ -509,62 +543,62 @@ namespace Template
         /// <param name="i"></param>
         public void drawVoxel(int i)
         {
-            Vector3 pos = getPosition(i);
-
+            Vector3 pos = getVisPosition(i);
+            //Console.WriteLine(pos);
 
             // Backside
             GL.Vertex3(pos);
-            GL.Vertex3(pos.X + voxelSize, pos.Y, pos.Z);
-            GL.Vertex3(pos.X + voxelSize, pos.Y + voxelSize, pos.Z);
+            GL.Vertex3(pos.X + visVoxelSize, pos.Y, pos.Z);
+            GL.Vertex3(pos.X + visVoxelSize, pos.Y + visVoxelSize, pos.Z);
 
             GL.Vertex3(pos);
-            GL.Vertex3(pos.X + voxelSize, pos.Y + voxelSize, pos.Z);
-            GL.Vertex3(pos.X, pos.Y + voxelSize, pos.Z);
+            GL.Vertex3(pos.X + visVoxelSize, pos.Y + visVoxelSize, pos.Z);
+            GL.Vertex3(pos.X, pos.Y + visVoxelSize, pos.Z);
 
             // Frontside
-            GL.Vertex3(pos.X, pos.Y, pos.Z + voxelSize);
-            GL.Vertex3(pos.X + voxelSize, pos.Y, pos.Z + voxelSize);
-            GL.Vertex3(pos.X + voxelSize, pos.Y + voxelSize, pos.Z + voxelSize);
+            GL.Vertex3(pos.X, pos.Y, pos.Z + visVoxelSize);
+            GL.Vertex3(pos.X + visVoxelSize, pos.Y, pos.Z + visVoxelSize);
+            GL.Vertex3(pos.X + visVoxelSize, pos.Y + visVoxelSize, pos.Z + visVoxelSize);
 
-            GL.Vertex3(pos.X, pos.Y, pos.Z + voxelSize);
-            GL.Vertex3(pos.X + voxelSize, pos.Y + voxelSize, pos.Z + voxelSize);
-            GL.Vertex3(pos.X, pos.Y + voxelSize, pos.Z + voxelSize);
+            GL.Vertex3(pos.X, pos.Y, pos.Z + visVoxelSize);
+            GL.Vertex3(pos.X + visVoxelSize, pos.Y + visVoxelSize, pos.Z + visVoxelSize);
+            GL.Vertex3(pos.X, pos.Y + visVoxelSize, pos.Z + visVoxelSize);
 
             // Top
-            GL.Vertex3(pos.X, pos.Y + voxelSize, pos.Z);
-            GL.Vertex3(pos.X + voxelSize, pos.Y + voxelSize, pos.Z);
-            GL.Vertex3(pos.X + voxelSize, pos.Y + voxelSize, pos.Z + voxelSize);
+            GL.Vertex3(pos.X, pos.Y + visVoxelSize, pos.Z);
+            GL.Vertex3(pos.X + visVoxelSize, pos.Y + visVoxelSize, pos.Z);
+            GL.Vertex3(pos.X + visVoxelSize, pos.Y + visVoxelSize, pos.Z + visVoxelSize);
 
-            GL.Vertex3(pos.X, pos.Y + voxelSize, pos.Z);
-            GL.Vertex3(pos.X + voxelSize, pos.Y + voxelSize, pos.Z + voxelSize);
-            GL.Vertex3(pos.X, pos.Y + voxelSize, pos.Z + voxelSize);
+            GL.Vertex3(pos.X, pos.Y + visVoxelSize, pos.Z);
+            GL.Vertex3(pos.X + visVoxelSize, pos.Y + visVoxelSize, pos.Z + visVoxelSize);
+            GL.Vertex3(pos.X, pos.Y + visVoxelSize, pos.Z + visVoxelSize);
 
             // Bottom
             GL.Vertex3(pos.X, pos.Y, pos.Z);
-            GL.Vertex3(pos.X + voxelSize, pos.Y, pos.Z);
-            GL.Vertex3(pos.X + voxelSize, pos.Y, pos.Z + voxelSize);
+            GL.Vertex3(pos.X + visVoxelSize, pos.Y, pos.Z);
+            GL.Vertex3(pos.X + visVoxelSize, pos.Y, pos.Z + visVoxelSize);
 
             GL.Vertex3(pos.X, pos.Y, pos.Z);
-            GL.Vertex3(pos.X + voxelSize, pos.Y, pos.Z + voxelSize);
-            GL.Vertex3(pos.X, pos.Y, pos.Z + voxelSize);
+            GL.Vertex3(pos.X + visVoxelSize, pos.Y, pos.Z + visVoxelSize);
+            GL.Vertex3(pos.X, pos.Y, pos.Z + visVoxelSize);
 
             // Left
             GL.Vertex3(pos);
-            GL.Vertex3(pos.X, pos.Y, pos.Z + voxelSize);
-            GL.Vertex3(pos.X, pos.Y + voxelSize, pos.Z + voxelSize);
+            GL.Vertex3(pos.X, pos.Y, pos.Z + visVoxelSize);
+            GL.Vertex3(pos.X, pos.Y + visVoxelSize, pos.Z + visVoxelSize);
 
             GL.Vertex3(pos);
-            GL.Vertex3(pos.X, pos.Y + voxelSize, pos.Z + voxelSize);
-            GL.Vertex3(pos.X, pos.Y + voxelSize, pos.Z);
+            GL.Vertex3(pos.X, pos.Y + visVoxelSize, pos.Z + visVoxelSize);
+            GL.Vertex3(pos.X, pos.Y + visVoxelSize, pos.Z);
 
             // Right
-            GL.Vertex3(pos.X + voxelSize, pos.Y, pos.Z);
-            GL.Vertex3(pos.X + voxelSize, pos.Y, pos.Z + voxelSize);
-            GL.Vertex3(pos.X + voxelSize, pos.Y + voxelSize, pos.Z + voxelSize);
+            GL.Vertex3(pos.X + visVoxelSize, pos.Y, pos.Z);
+            GL.Vertex3(pos.X + visVoxelSize, pos.Y, pos.Z + visVoxelSize);
+            GL.Vertex3(pos.X + visVoxelSize, pos.Y + visVoxelSize, pos.Z + visVoxelSize);
 
-            GL.Vertex3(pos.X + voxelSize, pos.Y, pos.Z);
-            GL.Vertex3(pos.X + voxelSize, pos.Y + voxelSize, pos.Z + voxelSize);
-            GL.Vertex3(pos.X + voxelSize, pos.Y + voxelSize, pos.Z);
+            GL.Vertex3(pos.X + visVoxelSize, pos.Y, pos.Z);
+            GL.Vertex3(pos.X + visVoxelSize, pos.Y + visVoxelSize, pos.Z + visVoxelSize);
+            GL.Vertex3(pos.X + visVoxelSize, pos.Y + visVoxelSize, pos.Z);
         }
 
         /// <summary>
@@ -619,20 +653,21 @@ namespace Template
                 for (int i = 0; i < voxels * voxels * voxels; i++) {
                     grid.Add(i, new List<int>());
                 }
-                float step = dim/50;
+                float step = dim/20;
                 int count = 0;
-                for(int i = 0; i <= numberOfPoints/100; i++){
-                    for(int j = 0; j < 50; j++){
-                        for(int k = 0; k < 50; k++) {
+                for(int i = 0; i <= numberOfPoints/2; i++){
+                    for(int j = 0; j < 20; j++){
+                        for(int k = 0; k < 20; k++) {
                             if(count < numberOfPoints){
-                                particles[count] = new Sphere(count, new Vector3(step*i, step*k+step/2, step*j+step/2), Vector3.Zero, 0.01f);
+                                particles[count] = new Sphere(count, new Vector3(step*i, step/3*j, step*k+step/2), Vector3.Zero, 0.01f);
                                 particles[count].color = new Vector3(0.5f, 0, 0);
                                 particles[count].Mass = 0.3f;
                                 particles[count].NetForce = new Vector3(0, 0, 0);
-                                if((k == 0 && j == 0 && i == 0) || (k == 9 && j == 9 && i == 0))
+                                if((k == 0 && j == 0 && i == 0) || (k == 9 && j == 9 && i == 2))
                                 {
                                     particles[count].verbose = false;
                                 }
+                                currentPoints++;
                             }
                             count++;
                         }

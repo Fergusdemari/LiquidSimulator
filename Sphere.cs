@@ -19,7 +19,7 @@ namespace template.Shapes
         public float Density;
         public float Pressure;
         public bool verbose = false;
-        public float damping = 2; 
+        public float damping = 5; 
         public Vector3 normal;
         // Meta info
         public int ListIndex;
@@ -95,7 +95,7 @@ namespace template.Shapes
             if (Position.X < 0)
             {
                 Position = new Vector3(0, Position.Y, Position.Z);
-                Velocity = new Vector3(-1 * Velocity.X, Velocity.Y, Velocity.Z);
+                Velocity = new Vector3(-1 * Velocity.X/damping, Velocity.Y, Velocity.Z);
             }
             if (Position.Y < 0)
             {
@@ -105,33 +105,41 @@ namespace template.Shapes
             if (Position.Z < 0)
             {
                 Position = new Vector3(Position.X, Position.Y, 0);
-                Velocity = new Vector3(Velocity.X, Velocity.Y, -1*Velocity.Z);
+                Velocity = new Vector3(Velocity.X, Velocity.Y, -1*Velocity.Z/damping);
             }
 
             if (Position.X >= Game.dim) {
                 Position = new Vector3(Game.dim-0.001f, Position.Y, Position.Z);
-                Velocity = new Vector3(-1 * Velocity.X, Velocity.Y, Velocity.Z);
+                Velocity = new Vector3(-1 * Velocity.X/damping, Velocity.Y, Velocity.Z);
             }
             if (Position.Y >= Game.dim) {
                 Position = new Vector3(Position.X, Game.dim-0.001f, Position.Z);
-                Velocity = new Vector3(Velocity.X, -1*Velocity.Y, Velocity.Z);
+                Velocity = new Vector3(Velocity.X, -1*Velocity.Y/damping, Velocity.Z);
             }
             if (Position.Z >= Game.dim) {
                 Position = new Vector3(Position.X, Position.Y, Game.dim-0.001f);
-                Velocity = new Vector3(Velocity.X, Velocity.Y, -1 * Velocity.Z);
+                Velocity = new Vector3(Velocity.X, Velocity.Y, -1 * Velocity.Z/damping);
             }
-
+                
+            int[] neighbors = Game.neighborsIndicesConcatenated(Position);
+            for (int i = 0; i < neighbors.Length; i++) {
+                float dist = Game.getSquaredDistance(Position, Game.particles[neighbors[i]].Position);
+                if (dist < (Radius + Radius) * (Radius + Radius)) {
+                    //solve interpenetration
+                    if(ListIndex != neighbors[i]){
+                        float depth = (float)(Math.Sqrt(dist) - Math.Sqrt((Radius + Radius) * (Radius + Radius)));
+                        Vector3 collisionNormal = this.Position - Game.particles[neighbors[i]].Position;
+                        collisionNormal.Normalize();
+                        //solve interpenetration
+                        Position -= depth*0.5f*collisionNormal;
+                        Game.particles[neighbors[i]].position += depth*0.5f*collisionNormal;
+                        //new velocity
+                        Velocity -= (depth * -(1+1f) * Vector3.Dot(Velocity, collisionNormal)*collisionNormal);
+                        Game.particles[neighbors[i]].Velocity += (depth * -(1+1f) * Vector3.Dot(Velocity, collisionNormal)*collisionNormal);
+                    }
+                }
+            }
             #endregion
-
-            //// Interparticle Collision TODO
-            //int[] neighbors = Game.neighborsIndicesConcatenated(Position);
-            //for (int i = 0; i < neighbors.Length; i++) {
-            //    float dist = Game.getSquaredDistance(Position, Game.particles[i].Position);
-            //    if (dist < (Radius + Radius) * (Radius + Radius)) {
-            //        // Resolve the collision
-            //    }
-            //}
-            // TODO Collision with fellow particles
         }
 
         /// <summary>

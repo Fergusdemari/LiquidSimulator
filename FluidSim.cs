@@ -8,20 +8,18 @@ namespace Template {
     public class FluidSim {
         int particleCount;
         //k is a coefficient basically for how dense the fluid is in general. Increasing k will make the particles act as if they represent a larger amount of fluid (box will appear more full)
-        float k = 0.8f;
+        float k = 0.05f;
         //how much the liquid stays together
-        float viscosity = 1.0f;
+        float viscosity =0.1f;
         //a preference pressure value
-        float p0 = 1.0f;
+        float p0 = 0.1f;
         //radius which is the cutoff for the kernels. Particle is only affected by other particles within this radius
-        float d = 0.1f;
-
-        float sigma = 0.1f;
-
+        static float d = 0.1f;
+        float sigma = 40000.0f;
         float timeStep;
-
+        float gradientFieldThreshold = 1.0f;
         Vector3[] spikyLookup = new Vector3[101];
-        float[] poly6Lookup = new float[101];
+        public static float[] poly6Lookup = new float[101];
         float[] laplacianLookup = new float[101];
 
         public FluidSim(int particleCount_, float timeStep_, Sphere[] points, float _d) {
@@ -86,7 +84,7 @@ namespace Template {
                 Game.particles[i].NetForce = new Vector3(0, 0, 0);
                 calcDensity(Game.particles[i]);
                 calcPressure(Game.particles[i]);
-                calcNormal(Game.particles[i]);
+                calcColorGradient(Game.particles[i]);
             }
         }
 
@@ -110,10 +108,6 @@ namespace Template {
                 calcViscosityForce(Game.particles[i]);
                 calcSurfaceTension(Game.particles[i]);
                 calcBodyForce(Game.particles[i]);
-                if (Game.particles[i].verbose)
-                {
-                    Console.WriteLine();
-                }
                 //Get the acceleration resulted from the force and integrate for position
                
             }
@@ -146,27 +140,35 @@ namespace Template {
          * 
          * This source was linked by Amir on the game physics course page
          **/
+        public static void calcDensity(Sphere p) {
+            p.Density = calcDensity(p.Position);
+        }
 
-        public void calcDensity(Sphere p) {
-            float dense = 1f;
+        public static float calcDensity(Vector3 position) {
+            float dense = 0.0f;
 
-            int[] closePointInds = Game.neighborsIndicesConcatenated(p.Position);
+            int[] closePointInds = Game.neighborsIndicesConcatenated(position);
             for (int i = 0; i < closePointInds.Length; i++) {
-                int index = (int)((Game.getDistance(p.Position, Game.particles[closePointInds[i]].Position)*100)/d);
+                int index = (int)((Game.getDistance(position, Game.particles[closePointInds[i]].Position)*100)/d);
                 if(index > 100){
                     index = 100;
                 }
+                if(index < 0){
+                    index = 0;
+                }
                 dense += Game.particles[closePointInds[i]].Mass * poly6Lookup[index];
             }
-
-            p.Density = dense;
+            if(dense == 0){
+                dense += 0.0001f;
+            }
+            return dense;
         }
 
         public void calcPressure(Sphere p) {
             p.Pressure = k * p.Density - k * p0;
         }
 
-        public void calcNormal(Sphere p){
+        public void calcColorGradient(Sphere p){
             Vector3 n = new Vector3(0,0,0);
             int[] closePointInds = Game.neighborsIndicesConcatenated(p.Position);
             for (int i = 0; i < closePointInds.Length; i++) {
@@ -174,9 +176,11 @@ namespace Template {
                 if(index > 100){
                     index = 100;
                 }
-                n += (Game.particles[closePointInds[i]].Mass / Game.particles[closePointInds[i]].Density) * Poly6GradientKernel(p.Position, Game.particles[closePointInds[i]].Position);
+                n += ((Game.particles[closePointInds[i]].Mass / Game.particles[closePointInds[i]].Density)) * Poly6GradientKernel(p.Position, Game.particles[closePointInds[i]].Position);
             }
-            n.Normalize();
+            if(n.Length > 0){
+                n.Normalize();
+            }
             p.normal = n;
         }
 
@@ -185,7 +189,7 @@ namespace Template {
             int[] closePointInds = Game.neighborsIndicesConcatenated(p.Position);
             for (int i = 0; i < closePointInds.Length; i++) {
                 float fScalar = -1.0f * Game.particles[closePointInds[i]].Mass * ((p.Pressure + Game.particles[closePointInds[i]].Pressure) / (2 * Game.particles[closePointInds[i]].Density));
-                f += fScalar * spikyPressureKernel(p.Position, Game.particles[closePointInds[i]].Position);
+                f += fScalar * spikyPressureKernel(p.Position, Game.particles[closePointInds[i]].Position);          
             }
             float withSelf = -1.0f * p.Mass * ((p.Pressure + p.Pressure) / (2 * p.Density));
             f -= withSelf * spikyPressureKernel(p.Position, p.Position);
@@ -215,37 +219,38 @@ namespace Template {
             p.NetForce += f;
         }
 
+        //Surface area model from here: https://cg.informatik.uni-freiburg.de/publications/2013_SIGGRAPHASIA_surfaceTensionAdhesion.pdf
         public void calcSurfaceTension(Sphere p)
         {
+            if(p.normal.Length < gradientFieldThreshold){
+                return;
+            }
+
             Vector3 f = new Vector3(0,0,0);
             Vector3 cNormal = new Vector3(0, 0, 0);
-            float cLaplacian = 0;
+            Vector3 cCurvature = new Vector3(0, 0, 0);
+            float K = p.Density;
             int[] closePointInds = Game.neighborsIndicesConcatenated(p.Position);
             for (int i = 0; i < closePointInds.Length; i++) {
-                int index = (int)((Game.getDistance(p.Position, Game.particles[closePointInds[i]].Position)*100)/d);
-                if(index > 100){
-                    index = 100;
-                }
                 Vector3 r = p.Position - Game.particles[closePointInds[i]].Position;
                 if(Game.getDistance(p.Position, Game.particles[closePointInds[i]].Position) > 0){
-                    cNormal += Poly6GradientKernel(p.Position, Game.particles[closePointInds[i]].Position) / Game.particles[closePointInds[i]].Density;
-                    cLaplacian += Poly6LaplacianKernel(Game.getDistance(p.Position, Game.particles[closePointInds[i]].Position)) / Game.particles[closePointInds[i]].Density;
+                    cNormal += Game.particles[closePointInds[i]].Mass * CohesionKernel(p.Position, Game.particles[closePointInds[i]].Position) * (r/r.Length);
+                    cCurvature += p.normal - Game.particles[closePointInds[i]].normal;
+                    K += Game.particles[closePointInds[i]].Density;
                }
 
             }
-
-            cNormal *= p.Mass;
-            cLaplacian *= p.Mass;
-
-            if(cNormal.Length > 7){
-                f = -sigma * cNormal / cNormal.Length * cLaplacian;
-                //Console.WriteLine("IN: " + f + "-" + cNormal + " -- " + cNormal.Length + " -- " + cLaplacian);
+            cNormal *= p.Mass * -sigma;
+            cCurvature *= p.Mass * -sigma;
+            if(K > 0.0001){
+                K = 2*p0/K;
+            }else{
+                K = 0;
             }
-
+            f = K* (cNormal + cCurvature);
             if (p.verbose){
                 Console.WriteLine("Surface: " + f);
             }
-
             p.NetForce += f;
         }
 
