@@ -1,6 +1,7 @@
 ﻿using OpenTK;
 using OpenTK.Graphics.OpenGL;
 using System;
+using System.IO;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
@@ -20,6 +21,10 @@ namespace Template
 
     class Game
     {
+        //OPENGL program variables
+        private int program;
+
+
         public enum Mode
         {
             PARTICLES,  //Displays them as points
@@ -27,7 +32,7 @@ namespace Template
             SHAPES      //Displays whatever shape we decided to give particles (tilted cube atm)
         }
 
-        public Mode displayMode = Mode.PARTICLES;
+        public Mode displayMode = Mode.SHAPES;
         
         public static bool Recording = false;
         public static bool random = false;
@@ -55,7 +60,7 @@ namespace Template
         static float visVoxelSize = (float)dim/visualisationVoxels;
         static float voxelSize = (float)dim / voxels;
 
-        public static int numberOfPoints = 1000;
+        public static int numberOfPoints = 3000;
         public static int currentPoints = 0;
 
         public Emitter[] emitters;
@@ -63,6 +68,15 @@ namespace Template
         public static Sphere[] particles = new Sphere[numberOfPoints];
         public static Dictionary<int, List<int>> grid = new Dictionary<int, List<int>>();
 
+        //OPENGL
+        public Vector3[] vertices;
+        public int[] indices;
+
+        public Vector3[] boundsVertices;
+        public int[] boundsIndices;
+
+        public Vector3[] vertexBuffer;
+        public int[] indexBuffer;
 
         public static int RNGSeed;
 
@@ -193,18 +207,24 @@ namespace Template
         /// </summary>
         public void RenderGL()
         {
+            if (showGrid)
+            {
+                drawGrid();
+            }
+            drawBorders();
+
             //Different displaymodes
             switch (displayMode)
             {
                 case Mode.PARTICLES:
-                    GL.Begin(PrimitiveType.Points);
-                    GL.Color3(1.0f, 1.0f, 1f);
                     // Drawing of all spheres
+                    vertices = new Vector3[currentPoints];
+                    indices = new int[currentPoints];
                     for (int i = 0; i < currentPoints; i++)
                     {
-                        GL.Vertex3(particles[i].Position);
+                        vertices[i] = particles[i].Position;
+                        indices[i] = i+boundsVertices.Length;
                     }
-                    GL.End();
                     break;
                 case Mode.CUBES:
                     GL.Begin(PrimitiveType.Triangles);
@@ -219,32 +239,37 @@ namespace Template
                     GL.End();
                     break;
                 case Mode.SHAPES:
-                    GL.Begin(PrimitiveType.Triangles);
-                    GL.PointSize(2000);
                     // Drawing of all spheres
+                    vertices = new Vector3[numberOfPoints * 6];
+                    indices = new int[numberOfPoints*8*3];
                     for (int i = 0; i < currentPoints; i++)
                     {
                         Vector3[] shape = particles[i].getShape();
-                        for (int j = 0; j < shape.Length; j++)
-                        {
-                            GL.Color3(particles[i].color.X, particles[i].color.Y, particles[i].color.Z);
-                            GL.Vertex3(shape[j]);
-                        }
+                        shape.CopyTo(vertices, i*6);
+
+                        int[] shapeIndex = new int[]{
+                            i*6+boundsVertices.Length, i*6+5+boundsVertices.Length, i*6+2+boundsVertices.Length,
+                            i*6+boundsVertices.Length, i*6+4+boundsVertices.Length, i*6+3+boundsVertices.Length,
+                            i*6+boundsVertices.Length, i*6+4+boundsVertices.Length, i*6+2+boundsVertices.Length,
+                            i*6+boundsVertices.Length, i*6+5+boundsVertices.Length, i*6+3+boundsVertices.Length,
+                            i*6+1+boundsVertices.Length, i*6+5+boundsVertices.Length, i*6+2+boundsVertices.Length,
+                            i*6+1+boundsVertices.Length, i*6+4+boundsVertices.Length, i*6+3+boundsVertices.Length,
+                            i*6+1+boundsVertices.Length, i*6+4+boundsVertices.Length, i*6+2+boundsVertices.Length,
+                            i*6+1+boundsVertices.Length, i*6+5+boundsVertices.Length, i*6+3+boundsVertices.Length,
+                        };
+
+                        shapeIndex.CopyTo(indices, i*8*3);
                     }
-                    GL.End();
                     break;
 
             }
-            if (showGrid)
-            {
-                drawGrid();
-            }
-            if (showBorders)
-            {
-                drawBorders();
-            }
+            vertexBuffer = new Vector3[vertices.Length + boundsVertices.Length];
+            boundsVertices.CopyTo(vertexBuffer, 0);
+            vertices.CopyTo(vertexBuffer, boundsVertices.Length);
 
-
+            indexBuffer = new int[indices.Length + boundsIndices.Length];
+            boundsIndices.CopyTo(indexBuffer, 0);
+            indices.CopyTo(indexBuffer, boundsIndices.Length);
         }
 
         #region Distancefunctions and their overloads
@@ -280,40 +305,32 @@ namespace Template
         /// </summary>
         private void drawBorders()
         {
-            GL.Begin(PrimitiveType.Lines);
-            GL.PointSize(1);
-            GL.Color3(0.5f, 0, 0.5f);
-            GL.Vertex3(0, 0, 0);
-            GL.Vertex3(0, 0, dim);
-            GL.Vertex3(0, 0, 0);
-            GL.Vertex3(0, dim, 0);
-            GL.Vertex3(0, 0, 0);
-            GL.Vertex3(dim, 0, 0);
+            boundsVertices = new Vector3[]{
+                new Vector3(0, 0, 0),       //0
+                new Vector3(0, 0, dim),     //1
+                new Vector3(0, dim, 0),     //2
+                new Vector3(dim, 0, 0),     //3
+                new Vector3(0, dim, dim),   //4
+                new Vector3(dim, 0, dim),   //5
+                new Vector3(dim, dim, 0),   //6
+                new Vector3(dim, dim, dim), //7
 
-            GL.Vertex3(0, 0, dim);
-            GL.Vertex3(0, dim, dim);
-            GL.Vertex3(0, 0, dim);
-            GL.Vertex3(dim, 0, dim);
+            };
 
-            GL.Vertex3(0, dim, 0);
-            GL.Vertex3(dim, dim, 0);
-            GL.Vertex3(0, dim, 0);
-            GL.Vertex3(0, dim, dim);
-
-            GL.Vertex3(dim, 0, 0);
-            GL.Vertex3(dim, dim, 0);
-            GL.Vertex3(dim, 0, 0);
-            GL.Vertex3(dim, 0, dim);
-
-            GL.Vertex3(dim, dim, dim);
-            GL.Vertex3(0, dim, dim);
-            GL.Vertex3(dim, dim, dim);
-            GL.Vertex3(dim, dim, 0);
-            GL.Vertex3(dim, dim, dim);
-            GL.Vertex3(dim, 0, dim);
-
-
-            GL.End();
+            boundsIndices = new int[]{
+                0, 1,
+                0, 2,
+                0, 3,
+                5, 1,
+                5, 3,
+                5, 7,
+                3, 6,
+                1, 4,
+                2, 6,
+                6, 7,
+                2, 4,
+                4, 7,
+            };
         }
 
 
@@ -674,6 +691,29 @@ namespace Template
                     }
                 }
             }
+        }
+
+        private int CompileShaders() {
+            var vertexShader = GL.CreateShader(ShaderType.VertexShader);
+            GL.ShaderSource(vertexShader, 
+            File.ReadAllText(@"Components\Shaders\vertexShader.vert"));
+            GL.CompileShader(vertexShader);
+
+            var fragmentShader = GL.CreateShader(ShaderType.FragmentShader);
+            GL.ShaderSource(fragmentShader, 
+            File.ReadAllText(@"Components\Shaders\fragmentShader.frag"));
+            GL.CompileShader(fragmentShader);
+
+            var program = GL.CreateProgram();
+            GL.AttachShader(program, vertexShader);
+            GL.AttachShader(program, fragmentShader);
+            GL.LinkProgram(program);
+
+            GL.DetachShader(program, vertexShader);
+            GL.DetachShader(program, fragmentShader);
+            GL.DeleteShader(vertexShader);
+            GL.DeleteShader(fragmentShader);
+            return program;
         }
     }
 }

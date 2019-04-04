@@ -173,40 +173,8 @@ namespace template.Shapes
             v[3] = Position + new Vector3(0, Radius, 0);
             v[4] = Position + new Vector3(-Radius, 0, 0);
             v[5] = Position + new Vector3(Radius, 0, 0);
-            //return vertices;
-            Vector3[] t = new Vector3[24];
-            t[0] = v[0];
-            t[1] = v[2];
-            t[2] = v[4];
-
-            t[3] = v[0];
-            t[4] = v[4];
-            t[5] = v[3];
-
-            t[6] = v[0];
-            t[7] = v[5];
-            t[8] = v[3];
-
-            t[9] = v[0];
-            t[10] = v[5];
-            t[11] = v[2];
-
-            t[12] = v[1];
-            t[13] = v[2];
-            t[14] = v[4];
-
-            t[15] = v[1];
-            t[16] = v[2];
-            t[17] = v[5];
-
-            t[18] = v[1];
-            t[19] = v[3];
-            t[20] = v[4];
-
-            t[21] = v[1];
-            t[22] = v[3];
-            t[23] = v[5];
-            return t;
+           
+            return v;
         }
     }
 }
