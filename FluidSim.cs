@@ -80,9 +80,6 @@ namespace Template {
                 calcDensity(i);
                 calcPressure(i);
             }
-            for (int i = startIndex; i < stopIndex; i++) {
-                calcColorGradient(i);
-            }
         }
 
         public void ForcesUpdate(int startIndex = -1, int stopIndex = -1) {
@@ -98,6 +95,7 @@ namespace Template {
                 if (Game.verbose[i]) {
                     Console.WriteLine("Particle: " + Game.GetVectorPosition(i));
                 }
+                calcColorGradient(i);
                 calcPresssureForce(i);
                 calcViscosityForce(i);
                 calcSurfaceTension(i);

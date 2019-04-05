@@ -21,12 +21,12 @@ namespace Template {
             SHAPES      //Displays whatever shape we decided to give particles (tilted cube atm)
         }
 
-
-
         #region originalGameVars
+        public static int numberOfPoints = 30000;
         public static Mode displayMode = Mode.PARTICLES;
+        private bool threading = true;
+        public static bool Recording = false;
 
-        public static bool Recording = true;
         public static bool running = false;
         public bool step = false;
         // Currently it's all done within 0-1. If you want it to be 0-3, set dim to 3 (In case of rounding errors maybe?)
@@ -40,18 +40,16 @@ namespace Template {
         //Debug showing
         bool showGrid = false;
         bool showBorders = true;
-        // Keep threading false atm, issues with locking
-        private bool threading = false;
+
 
         // Number of voxels in the grid per dimension
         static int voxels = 64;
-        static int visualisationVoxels = 32;
+        static int visualisationVoxels = 64;
         bool[] visualisationVoxelSwitches = new bool[visualisationVoxels * visualisationVoxels * visualisationVoxels];
         // Size of one voxele
         static float visVoxelSize = dim / visualisationVoxels;
         static float voxelSize = dim / voxels;
 
-        public static int numberOfPoints = 8000;
         public static int currentPoints = 0;
 
         public Emitter[] emitters;
@@ -317,6 +315,7 @@ namespace Template {
         /// <param name="e"></param>
         public void Tick(FrameEventArgs e) {
             Random r = new Random();
+            #region emitters
             if (currentPoints < numberOfPoints && (running || step)) {
                 for (int i = 0; i < emitters.Length; i++) {
                     if (emitters[i].tickCounter == 0) {
@@ -343,6 +342,8 @@ namespace Template {
                     }
                 }
             }
+            #endregion
+
             // If set to threading, split the taskforce up, but if the amount of points is too small then there's no point
             if (threading && !(N < 100)) {
                 if (running || step) {
@@ -404,13 +405,16 @@ namespace Template {
 
                     // Drawing of all spheres
                     int vboID;
-                    Vector3[] allVerts = new Vector3[currentPoints * 3];
-                    for (int i = 0; i < currentPoints; i++) {
-                        allVerts[i] = GetVectorPosition(i);
-                    }
+                    float[] allVerts = new float[numberOfPoints * 3];
+                        for (int i = 0; i < numberOfPoints; i+=3) {
+                            allVerts[i] = PosX[i];
+                            allVerts[i+1] = PosY[i];
+                            allVerts[i+2] = PosZ[i];
+                        }
+                    
                     vboID = GL.GenBuffer();
                     GL.BindBuffer(BufferTarget.ArrayBuffer, vboID);
-                    GL.BufferData<Vector3>(BufferTarget.ArrayBuffer, (IntPtr)(Vector3.SizeInBytes * allVerts.Length),
+                    GL.BufferData<float>(BufferTarget.ArrayBuffer, (IntPtr)(allVerts.Length * 4),
                         allVerts, BufferUsageHint.StaticDraw);
 
                     GL.EnableClientState(ArrayCap.VertexArray);
@@ -423,11 +427,17 @@ namespace Template {
                     GL.Begin(PrimitiveType.Triangles);
                     GL.Color4(0.1f, 0.1, 1f, 1f);
                     /// Drawing of voxels when not empty
-                    for (int i = 0; i < visualisationVoxels * visualisationVoxels * visualisationVoxels; i++) {
-                        if (visualisationVoxelSwitches[i]) {
+                    for (int i = 0; i < voxels*voxels*voxels; i++) {
+                        if (grid[i].Count > 0) {
                             drawVoxel(i);
                         }
                     }
+                    //for (int i = 0; i < visualisationVoxels * visualisationVoxels * visualisationVoxels; i++) {
+                    //    
+                    //    if (visualisationVoxelSwitches[i]) {
+                    //        drawVoxel(i);
+                    //    }
+                    //}
                     GL.End();
                     break;
                 case Mode.SHAPES:
