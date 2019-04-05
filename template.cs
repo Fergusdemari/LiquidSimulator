@@ -111,8 +111,8 @@ namespace Template
         {
             vertexShaderHandle = GL.CreateShader(ShaderType.VertexShader);
             fragmentShaderHandle = GL.CreateShader(ShaderType.FragmentShader);
-            StreamReader Vs = new StreamReader( "../../vertex.glsl" );
-            StreamReader Fs = new StreamReader( "../../fragment.glsl" );
+            StreamReader Vs = new StreamReader( "vertex.glsl" );
+            StreamReader Fs = new StreamReader( "fragment.glsl" );
             GL.ShaderSource(vertexShaderHandle, Vs.ReadToEnd());
             GL.ShaderSource(fragmentShaderHandle, Fs.ReadToEnd());
 
