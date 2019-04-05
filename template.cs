@@ -7,6 +7,8 @@ using OpenTK.Graphics.OpenGL;
 using OpenTK.Input;
 using template;
 using System.Drawing.Imaging;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace Template
 {
@@ -18,6 +20,7 @@ namespace Template
         public static Matrix4 Camera;
         public static Vector3 ViewDirectionOriginal;
         public static Vector3 UpDirectionOriginal;
+        public bool SpaceHasBeenReleased = true;
 
         private static Vector3 viewDirection;
         public static Vector3 ViewDirection {
@@ -38,7 +41,7 @@ namespace Template
             ResetCamera();
             // called upon app init
             GL.Hint(HintTarget.PerspectiveCorrectionHint, HintMode.Nicest);
-            ClientSize = new Size(1024, 1024);
+            ClientSize = new Size(960, 960);
             Location = new Point(300, 0); 
             game = new Game(); 
             game.screen = new Surface(Width, Height);
@@ -211,23 +214,36 @@ namespace Template
 
             if (keyboard[OpenTK.Input.Key.Space])
             {
-                if (game.running) { 
-                    game.running = false;
-                }else { 
-                    game.running = true;
+                if (SpaceHasBeenReleased) {
+                    SpaceHasBeenReleased = false;
+                    if (Game.running) {
+                        Game.running = false;
+                    } else {
+                        Game.running = true;
+                    }
                 }
-
+            } else {
+                SpaceHasBeenReleased = true;
             }
 
-            //if (keyboard[OpenTK.Input.Key.I])
-            //{
-            //    VideoMaker.Start();
-            //}
-            //
-            //if (keyboard[OpenTK.Input.Key.O])
-            //{
-            //    VideoMaker.Close();
-            //}
+            if (keyboard[OpenTK.Input.Key.Number0]) {
+                Game.displayMode = Game.Mode.CUBES;
+            }
+            if (keyboard[OpenTK.Input.Key.Number9]) {
+                Game.displayMode = Game.Mode.PARTICLES;
+            }
+            if (keyboard[OpenTK.Input.Key.Number8]) {
+                Game.displayMode = Game.Mode.SHAPES;
+            }
+            if (keyboard[OpenTK.Input.Key.H]) {
+                List<int> temp = new List<int>();
+                for (int i = 0; i < Game.grid.Count; i++) {
+                    if (Game.grid[i].Count > 0) {
+                        temp.Add(i);
+                    }
+                }
+                Console.WriteLine();
+            }
 
 
         }
