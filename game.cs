@@ -35,7 +35,7 @@ namespace Template {
         public static float gravity = -9.81f;
         // Stepsize of each frame. Set to very tiny if you want it to look silky smooth
         public float dt = 1.0f / 25f;
-
+        public float Radius = 0.01f;
         //Debug showing
         bool showGrid = false;
         bool showBorders = true;
@@ -50,7 +50,7 @@ namespace Template {
         static float visVoxelSize = dim / visualisationVoxels;
         static float voxelSize = dim / voxels;
 
-        public static int numberOfPoints = 3000;
+        public static int numberOfPoints = 1000;
         public static int currentPoints = 0;
 
         public Emitter[] emitters;
@@ -60,12 +60,14 @@ namespace Template {
 
         //OPENGL
         public Vector3[] vertices;
+        public Vector3[] normals;
         public int[] indices;
 
         public Vector3[] boundsVertices;
         public int[] boundsIndices;
 
         public Vector3[] vertexBuffer;
+        public Vector3[] normalsBuffer;
         public int[] indexBuffer;
 
         public static int RNGSeed;
@@ -217,36 +219,24 @@ namespace Template {
                     break;
                 case Mode.SHAPES:
                     // Drawing of all spheres
-                    vertices = new Vector3[numberOfPoints * 6];
-                    indices = new int[numberOfPoints*8*3];
+                    normals = new Vector3[numberOfPoints * 24];
+                    vertices = new Vector3[numberOfPoints * 24];
                     for (int i = 0; i < currentPoints; i++)
                     {
-                        Vector3[] shape = particles[i].getShape();
-                        shape.CopyTo(vertices, i*6);
-
-                        int[] shapeIndex = new int[]{
-                            i*6+boundsVertices.Length, i*6+5+boundsVertices.Length, i*6+2+boundsVertices.Length,
-                            i*6+boundsVertices.Length, i*6+4+boundsVertices.Length, i*6+3+boundsVertices.Length,
-                            i*6+boundsVertices.Length, i*6+4+boundsVertices.Length, i*6+2+boundsVertices.Length,
-                            i*6+boundsVertices.Length, i*6+5+boundsVertices.Length, i*6+3+boundsVertices.Length,
-                            i*6+1+boundsVertices.Length, i*6+5+boundsVertices.Length, i*6+2+boundsVertices.Length,
-                            i*6+1+boundsVertices.Length, i*6+4+boundsVertices.Length, i*6+3+boundsVertices.Length,
-                            i*6+1+boundsVertices.Length, i*6+4+boundsVertices.Length, i*6+2+boundsVertices.Length,
-                            i*6+1+boundsVertices.Length, i*6+5+boundsVertices.Length, i*6+3+boundsVertices.Length,
-                        };
-
-                        shapeIndex.CopyTo(indices, i*8*3);
+                        Vector3[] shape = getShape(particles[i].Position);
+                        Vector3[] shapeNorms = getShapeNormals(particles[i].Position);
+                        shapeNorms.CopyTo(normals, i*24);
+                        shape.CopyTo(vertices, i*24);
                     }
                     break;
 
             }
+            normalsBuffer = new Vector3[normals.Length + boundsVertices.Length];
+            normals.CopyTo(normalsBuffer, boundsVertices.Length);
+
             vertexBuffer = new Vector3[vertices.Length + boundsVertices.Length];
             boundsVertices.CopyTo(vertexBuffer, 0);
             vertices.CopyTo(vertexBuffer, boundsVertices.Length);
-            
-            indexBuffer = new int[indices.Length + boundsIndices.Length];
-            boundsIndices.CopyTo(indexBuffer, 0);
-            indices.CopyTo(indexBuffer, boundsIndices.Length);
         }
 
         #region Distancefunctions and their overloads
@@ -279,15 +269,34 @@ namespace Template {
         private void drawBorders()
         {
             boundsVertices = new Vector3[]{
-                new Vector3(0, 0, 0),       //0
-                new Vector3(0, 0, dim),     //1
-                new Vector3(0, dim, 0),     //2
-                new Vector3(dim, 0, 0),     //3
-                new Vector3(0, dim, dim),   //4
-                new Vector3(dim, 0, dim),   //5
-                new Vector3(dim, dim, 0),   //6
-                new Vector3(dim, dim, dim), //7
+                new Vector3(0, 0, 0),
+                new Vector3(0, 0, dim),
+                new Vector3(0, 0, 0),
+                new Vector3(0, dim, 0),
+                new Vector3(0, 0, 0),
+                new Vector3(dim, 0, 0),
 
+                new Vector3(0, 0, dim),
+                new Vector3(0, dim, dim),
+                new Vector3(0, 0, dim),
+                new Vector3(dim, 0, dim),
+
+                new Vector3(0, dim, 0),
+                new Vector3(dim, dim, 0),
+                new Vector3(0, dim, 0),
+                new Vector3(0, dim, dim),
+
+                new Vector3(dim, 0, 0),
+                new Vector3(dim, dim, 0),
+                new Vector3(dim, 0, 0),
+                new Vector3(dim, 0, dim),
+
+                new Vector3(dim, dim, dim),
+                new Vector3(0, dim, dim),
+                new Vector3(dim, dim, dim),
+                new Vector3(dim, dim, 0),
+                new Vector3(dim, dim, dim),
+                new Vector3(dim, 0, dim)
             };
 
             boundsIndices = new int[]{
@@ -584,13 +593,13 @@ namespace Template {
             for (int i = 0; i < voxels * voxels * voxels; i++) {
                 grid.Add(i, new List<int>());
             }
-            float step = dim / 20;
+            float step = dim / 30;
             int count = 0;
             for (int i = 0; i <= numberOfPoints / 2; i++) {
                 for (int j = 0; j < 20; j++) {
                     for (int k = 0; k < 20; k++) {
                         if (count < numberOfPoints) {
-                            particles[count] = new Sphere(count, new Vector3(step * i, step / 3 * j, step * k + step / 2), Vector3.Zero, 0.01f);
+                            particles[count] = new Sphere(count, new Vector3(step / 3 * j, step * k + step / 2, step * i), Vector3.Zero, 0.01f);
                             particles[count].color = new Vector3(0.5f, 0, 0);
                             particles[count].Mass = 0.3f;
                             particles[count].NetForce = new Vector3(0, 0, 0);
@@ -604,6 +613,94 @@ namespace Template {
                 }
             }
 
+        }
+
+        public Vector3[] getShape(Vector3 Position){
+            Vector3[] v = new Vector3[6];
+            v[0] = Position + new Vector3(0, 0, -Radius);
+            v[1] = Position + new Vector3(0, 0, Radius);
+            v[2] = Position + new Vector3(0, -Radius, 0);
+            v[3] = Position + new Vector3(0, Radius, 0);
+            v[4] = Position + new Vector3(-Radius, 0, 0);
+            v[5] = Position + new Vector3(Radius, 0, 0);
+            //return vertices;
+            Vector3[] t = new Vector3[24];
+            t[0] = v[0];
+            t[1] = v[2];
+            t[2] = v[4];
+
+            t[3] = v[0];
+            t[4] = v[4];
+            t[5] = v[3];
+
+            t[6] = v[0];
+            t[7] = v[5];
+            t[8] = v[3];
+
+            t[9] = v[0];
+            t[10] = v[5];
+            t[11] = v[2];
+
+            t[12] = v[1];
+            t[13] = v[2];
+            t[14] = v[4];
+
+            t[15] = v[1];
+            t[16] = v[2];
+            t[17] = v[5];
+
+            t[18] = v[1];
+            t[19] = v[3];
+            t[20] = v[4];
+
+            t[21] = v[1];
+            t[22] = v[3];
+            t[23] = v[5];
+            return t;
+        }
+
+        public Vector3[] getShapeNormals(Vector3 Position){
+            Vector3[] v = new Vector3[6];
+            v[0] = new Vector3(0, 0, -Radius);
+            v[1] = new Vector3(0, 0, Radius);
+            v[2] = new Vector3(0, -Radius, 0);
+            v[3] = new Vector3(0, Radius, 0);
+            v[4] = new Vector3(-Radius, 0, 0);
+            v[5] = new Vector3(Radius, 0, 0);
+
+            Vector3[] t = new Vector3[24];
+            t[0] = v[0];
+            t[1] = v[2];
+            t[2] = v[4];
+
+            t[3] = v[0];
+            t[4] = v[4];
+            t[5] = v[3];
+
+            t[6] = v[0];
+            t[7] = v[5];
+            t[8] = v[3];
+
+            t[9] = v[0];
+            t[10] = v[5];
+            t[11] = v[2];
+
+            t[12] = v[1];
+            t[13] = v[2];
+            t[14] = v[4];
+
+            t[15] = v[1];
+            t[16] = v[2];
+            t[17] = v[5];
+
+            t[18] = v[1];
+            t[19] = v[3];
+            t[20] = v[4];
+
+            t[21] = v[1];
+            t[22] = v[3];
+            t[23] = v[5];
+            return t;
         }
     }
 }

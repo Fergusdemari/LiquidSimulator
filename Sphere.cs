@@ -19,7 +19,7 @@ namespace template.Shapes
         public float Density;
         public float Pressure;
         public bool verbose = false;
-        public float damping = 5; 
+        public float damping = 1; 
         public Vector3 normal;
         // Meta info
         public int ListIndex;
@@ -164,8 +164,7 @@ namespace template.Shapes
         /// Makes a shape to represent this particle
         /// </summary>
         /// <returns> Returns a list of vertices for a CUBE shape </returns>
-        public Vector3[] getShape()
-        {
+        public Vector3[] getShape(Vector3 Position){
             Vector3[] v = new Vector3[6];
             v[0] = Position + new Vector3(0, 0, -Radius);
             v[1] = Position + new Vector3(0, 0, Radius);
@@ -173,8 +172,21 @@ namespace template.Shapes
             v[3] = Position + new Vector3(0, Radius, 0);
             v[4] = Position + new Vector3(-Radius, 0, 0);
             v[5] = Position + new Vector3(Radius, 0, 0);
-           
             return v;
+        }
+
+        public Vector3[] getShapeNormals(Vector3 Position){
+            Vector3[] n = new Vector3[6];
+            n[0] = new Vector3(0, 0, -Radius);
+            n[1] = new Vector3(0, 0, Radius);
+            n[2] = new Vector3(0, -Radius, 0);
+            n[3] = new Vector3(0, Radius, 0);
+            n[4] = new Vector3(-Radius, 0, 0);
+            n[5] = new Vector3(Radius, 0, 0);
+            //for(int i = 0; i < 6; i++)
+                //Console.WriteLine(n[i]);
+            //Console.WriteLine("NEXT");
+            return n;
         }
     }
 }

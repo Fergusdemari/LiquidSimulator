@@ -10,7 +10,7 @@ namespace Template {
         //k is a coefficient basically for how dense the fluid is in general. Increasing k will make the particles act as if they represent a larger amount of fluid (box will appear more full)
         float k = 0.05f;
         //how much the liquid stays together
-        float viscosity =0.1f;
+        float viscosity =1.0f;
         //a preference pressure value
         float p0 = 0.1f;
         //radius which is the cutoff for the kernels. Particle is only affected by other particles within this radius
@@ -210,8 +210,12 @@ namespace Template {
                 }
 
                 f += viscosity * Game.particles[closePointInds[i]].Mass * ((Game.particles[closePointInds[i]].Velocity - p.Velocity) / Game.particles[closePointInds[i]].Density) * laplacianLookup[index];
+                            if(p.verbose)
+            {
+                Console.WriteLine("Viscocity: " + viscosity + " " + Game.particles[closePointInds[i]].Mass + " " + Game.particles[closePointInds[i]].Mass + " " + (Game.particles[closePointInds[i]].Velocity - p.Velocity) + " "  + Game.particles[closePointInds[i]].Density + " " + laplacianLookup[index]);
             }
-            // Console.WriteLine("viscosity force: " + f);
+            }
+            //Console.WriteLine("viscosity force: " + f);
             if(p.verbose)
             {
                 Console.WriteLine("Viscocity: " + f);
@@ -302,9 +306,6 @@ namespace Template {
 
         public Vector3 Poly6GradientKernel(Vector3 x1, Vector3 x2){
             float r = Game.getDistance(x1, x2);
-            if(r < 1.0f){ 
-                r = 0.1f;
-            }
 
             if (r > d) {
                 return new Vector3(0, 0, 0);
