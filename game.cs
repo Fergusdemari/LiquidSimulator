@@ -23,7 +23,7 @@ namespace Template {
             SHAPES      //Displays whatever shape we decided to give particles (tilted cube atm)
         }
 
-        public Mode displayMode = Mode.SHAPES;
+        public Mode displayMode = Mode.PARTICLES;
 
         public static bool Recording = false;
         public bool running = false;
@@ -199,11 +199,11 @@ namespace Template {
                 case Mode.PARTICLES:
                     // Drawing of all spheres
                     vertices = new Vector3[currentPoints];
-                    indices = new int[currentPoints];
+                    normals = new Vector3[numberOfPoints];
                     for (int i = 0; i < currentPoints; i++)
                     {
                         vertices[i] = particles[i].Position;
-                        indices[i] = i+boundsVertices.Length;
+                        normals[i] = new Vector3(-0.5f, 0.5f, -2.0f);
                     }
                     break;
                 case Mode.CUBES:

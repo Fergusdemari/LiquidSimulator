@@ -193,7 +193,7 @@ namespace Template
 
             GL.DrawArrays(PrimitiveType.Lines, 0, game.boundsVertices.Length);
             if(game.displayMode == Game.Mode.PARTICLES){
-                GL.DrawElements(BeginMode.Points, game.indices.Length, DrawElementsType.UnsignedInt, game.boundsIndices.Length);
+                GL.DrawArrays(PrimitiveType.Points, game.boundsVertices.Length, game.vertices.Length);
             }else if (game.displayMode == Game.Mode.SHAPES){
                 GL.DrawArrays(PrimitiveType.Triangles, game.boundsVertices.Length, game.vertices.Length);
             }

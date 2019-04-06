@@ -14,7 +14,7 @@ namespace Template {
         //a preference pressure value
         float p0 = 0.1f;
         //radius which is the cutoff for the kernels. Particle is only affected by other particles within this radius
-        static float d = 0.1f;
+        static float d = 0.15f;
         float sigma = 40000.0f;
         float timeStep;
         float gradientFieldThreshold = 1.0f;
