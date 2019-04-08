@@ -595,7 +595,7 @@ namespace Template {
             }
             int count = 0;
 
-            int val = 30;
+            int val = 20;
             float step = dim / val;
 
             for (int i = 0; i <= val; i++)
