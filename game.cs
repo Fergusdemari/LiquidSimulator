@@ -53,6 +53,7 @@ namespace Template {
         public static int currentPoints = 0;
 
         public Emitter[] emitters;
+        public static int numberOfPoints = 1000;
 
         public static Sphere[] particles = new Sphere[numberOfPoints];
         public static Dictionary<int, List<int>> grid = new Dictionary<int, List<int>>();
