@@ -106,6 +106,8 @@ namespace Template
             set { upDirection = value.Normalized(); }
         }
 
+        public bool SpaceHasBeenReleased = true;
+
         public static Vector3 position;
         public static float angle = 0.0f;
         protected override void OnLoad(EventArgs e)
@@ -192,9 +194,9 @@ namespace Template
             GL.UniformMatrix4(modelviewMatrixLocation, false, ref modelviewMatrix);
 
             GL.DrawArrays(PrimitiveType.Lines, 0, game.boundsVertices.Length);
-            if(game.displayMode == Game.Mode.PARTICLES){
+            if(Game.displayMode == Game.Mode.PARTICLES){
                 GL.DrawArrays(PrimitiveType.Points, game.boundsVertices.Length, game.vertices.Length);
-            }else if (game.displayMode == Game.Mode.SHAPES){
+            }else if (Game.displayMode == Game.Mode.SHAPES){
                 GL.DrawArrays(PrimitiveType.Triangles, game.boundsVertices.Length, game.vertices.Length);
             }
             SwapBuffers();
@@ -248,14 +250,14 @@ namespace Template
             {
                 ResetCamera();
             }
-            if (keyboard[OpenTK.Input.Key.Number1])
-            {
-                Game.RestartScene(true);
-            }
-            if (keyboard[OpenTK.Input.Key.Number2])
-            {
-                Game.RestartScene(false);
-            }
+            //if (keyboard[OpenTK.Input.Key.Number1])
+            //{
+            //    Game.RestartScene(true);
+            //}
+            //if (keyboard[OpenTK.Input.Key.Number2])
+            //{
+            //    Game.RestartScene(false);
+            //}
 
             if (keyboard[OpenTK.Input.Key.W])
             {
@@ -302,12 +304,33 @@ namespace Template
 
             if (keyboard[OpenTK.Input.Key.Space])
             {
-                if (game.running) { 
-                    game.running = false;
-                }else { 
-                    game.running = true;
+                if (SpaceHasBeenReleased)
+                {
+                    SpaceHasBeenReleased = false;
+                    if (game.running)
+                    {
+                        game.running = false;
+                    }
+                    else
+                    {
+                        game.running = true;
+                    }
                 }
+            }
+            else
+            {
+                SpaceHasBeenReleased = true;
+            }
 
+
+        
+            if (keyboard[OpenTK.Input.Key.Number9])
+            {
+                Game.displayMode = Game.Mode.PARTICLES;
+            }
+            if (keyboard[OpenTK.Input.Key.Number8])
+            {
+                Game.displayMode = Game.Mode.SHAPES;
             }
 
             //if (keyboard[OpenTK.Input.Key.I])
