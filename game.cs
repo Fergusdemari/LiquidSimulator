@@ -23,7 +23,7 @@ namespace Template {
             SHAPES      //Displays whatever shape we decided to give particles (tilted cube atm)
         }
 
-        public Mode displayMode = Mode.SHAPES;
+        public static Mode displayMode = Mode.SHAPES;
 
         public static bool Recording = false;
         public bool running = false;
@@ -50,10 +50,10 @@ namespace Template {
         static float visVoxelSize = dim / visualisationVoxels;
         static float voxelSize = dim / voxels;
 
-        public static int numberOfPoints = 1000;
         public static int currentPoints = 0;
 
         public Emitter[] emitters;
+        public static int numberOfPoints = 1000;
 
         public static Sphere[] particles = new Sphere[numberOfPoints];
         public static Dictionary<int, List<int>> grid = new Dictionary<int, List<int>>();
@@ -61,14 +61,11 @@ namespace Template {
         //OPENGL
         public Vector3[] vertices;
         public Vector3[] normals;
-        public int[] indices;
 
         public Vector3[] boundsVertices;
-        public int[] boundsIndices;
 
         public Vector3[] vertexBuffer;
         public Vector3[] normalsBuffer;
-        public int[] indexBuffer;
 
         public static int RNGSeed;
 
@@ -297,21 +294,6 @@ namespace Template {
                 new Vector3(dim, dim, 0),
                 new Vector3(dim, dim, dim),
                 new Vector3(dim, 0, dim)
-            };
-
-            boundsIndices = new int[]{
-                0, 1,
-                0, 2,
-                0, 3,
-                5, 1,
-                5, 3,
-                5, 7,
-                3, 6,
-                1, 4,
-                2, 6,
-                6, 7,
-                2, 4,
-                4, 7,
             };
         }
 
@@ -593,23 +575,33 @@ namespace Template {
             for (int i = 0; i < voxels * voxels * voxels; i++) {
                 grid.Add(i, new List<int>());
             }
-            float step = dim / 30;
             int count = 0;
-            for (int i = 0; i <= numberOfPoints / 2; i++) {
-                for (int j = 0; j < 20; j++) {
-                    for (int k = 0; k < 20; k++) {
-                        if (count < numberOfPoints) {
-                            particles[count] = new Sphere(count, new Vector3(step / 3 * j, step * k + step / 2, step * i), Vector3.Zero, 0.01f);
+
+            int val = 20;
+            float step = dim / val;
+
+            for (int i = 0; i <= val; i++)
+            {
+                for (int j = 0; j < val; j++)
+                {
+                    for (int k = 1; k < val; k++)
+                    {
+                        if (count < numberOfPoints)
+                        {
+
+                            particles[count] = new Sphere(count, new Vector3(step * i, step * j / 1.3f, step * k), Vector3.Zero, 0.001f);
                             particles[count].color = new Vector3(0.5f, 0, 0);
                             particles[count].Mass = 0.3f;
                             particles[count].NetForce = new Vector3(0, 0, 0);
-                            if ((k == 0 && j == 0 && i == 0) || (k == 9 && j == 9 && i == 2)) {
+                            if ((k == 0 && j == 0 && i == 0) || (k == 9 && j == 9 && i == 2))
+                            {
                                 particles[count].verbose = false;
                             }
                             currentPoints++;
                         }
                         count++;
                     }
+                    
                 }
             }
 

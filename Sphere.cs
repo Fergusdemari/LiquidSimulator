@@ -100,7 +100,7 @@ namespace template.Shapes
             if (Position.Y < 0)
             {
                 Position = new Vector3(Position.X, 0, Position.Z);
-                Velocity = new Vector3(Velocity.X, -1*Velocity.Y/damping, Velocity.Z);
+                Velocity = new Vector3(Velocity.X, -1*Velocity.Y/(3*damping), Velocity.Z);
             }
             if (Position.Z < 0)
             {
