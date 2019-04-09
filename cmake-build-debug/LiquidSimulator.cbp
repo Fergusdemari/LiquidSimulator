@@ -1,0 +1,278 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CodeBlocks_project_file>
+	<FileVersion major="1" minor="6"/>
+	<Project>
+		<Option title="LiquidSimulator"/>
+		<Option makefile_is_custom="1"/>
+		<Option compiler="gcc"/>
+		<Option virtualFolders="CMake Files\;"/>
+		<Build>
+			<Target title="all">
+				<Option working_dir="/Users/georgelorenzetti/Documents/GamePhysics/LiquidSimulator/cmake-build-debug"/>
+				<Option type="4"/>
+				<MakeCommands>
+					<Build command="/usr/bin/make -j8 -f &quot;/Users/georgelorenzetti/Documents/GamePhysics/LiquidSimulator/cmake-build-debug/Makefile&quot;  VERBOSE=1 all"/>
+					<CompileFile command="/usr/bin/make -j8 -f &quot;/Users/georgelorenzetti/Documents/GamePhysics/LiquidSimulator/cmake-build-debug/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="/usr/bin/make -j8 -f &quot;/Users/georgelorenzetti/Documents/GamePhysics/LiquidSimulator/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="/usr/bin/make -j8 -f &quot;/Users/georgelorenzetti/Documents/GamePhysics/LiquidSimulator/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+			<Target title="rebuild_cache">
+				<Option working_dir="/Users/georgelorenzetti/Documents/GamePhysics/LiquidSimulator/cmake-build-debug"/>
+				<Option type="4"/>
+				<MakeCommands>
+					<Build command="/usr/bin/make -j8 -f &quot;/Users/georgelorenzetti/Documents/GamePhysics/LiquidSimulator/cmake-build-debug/Makefile&quot;  VERBOSE=1 rebuild_cache"/>
+					<CompileFile command="/usr/bin/make -j8 -f &quot;/Users/georgelorenzetti/Documents/GamePhysics/LiquidSimulator/cmake-build-debug/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="/usr/bin/make -j8 -f &quot;/Users/georgelorenzetti/Documents/GamePhysics/LiquidSimulator/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="/usr/bin/make -j8 -f &quot;/Users/georgelorenzetti/Documents/GamePhysics/LiquidSimulator/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+			<Target title="edit_cache">
+				<Option working_dir="/Users/georgelorenzetti/Documents/GamePhysics/LiquidSimulator/cmake-build-debug"/>
+				<Option type="4"/>
+				<MakeCommands>
+					<Build command="/usr/bin/make -j8 -f &quot;/Users/georgelorenzetti/Documents/GamePhysics/LiquidSimulator/cmake-build-debug/Makefile&quot;  VERBOSE=1 edit_cache"/>
+					<CompileFile command="/usr/bin/make -j8 -f &quot;/Users/georgelorenzetti/Documents/GamePhysics/LiquidSimulator/cmake-build-debug/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="/usr/bin/make -j8 -f &quot;/Users/georgelorenzetti/Documents/GamePhysics/LiquidSimulator/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="/usr/bin/make -j8 -f &quot;/Users/georgelorenzetti/Documents/GamePhysics/LiquidSimulator/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+			<Target title="LiquidSimulator">
+				<Option output="/Users/georgelorenzetti/Documents/GamePhysics/LiquidSimulator/cmake-build-debug/LiquidSimulator" prefix_auto="0" extension_auto="0"/>
+				<Option working_dir="/Users/georgelorenzetti/Documents/GamePhysics/LiquidSimulator/cmake-build-debug"/>
+				<Option object_output="./"/>
+				<Option type="1"/>
+				<Option compiler="gcc"/>
+				<Compiler>
+					<Add directory="/Library/Developer/CommandLineTools/usr/include/c++/v1"/>
+					<Add directory="/usr/local/include"/>
+					<Add directory="/Library/Developer/CommandLineTools/usr/lib/clang/9.1.0/include"/>
+					<Add directory="/Library/Developer/CommandLineTools/usr/include"/>
+					<Add directory="/usr/include"/>
+					<Add directory="/System/Library/Frameworks"/>
+					<Add directory="/Library/Frameworks"/>
+				</Compiler>
+				<MakeCommands>
+					<Build command="/usr/bin/make -j8 -f &quot;/Users/georgelorenzetti/Documents/GamePhysics/LiquidSimulator/cmake-build-debug/Makefile&quot;  VERBOSE=1 LiquidSimulator"/>
+					<CompileFile command="/usr/bin/make -j8 -f &quot;/Users/georgelorenzetti/Documents/GamePhysics/LiquidSimulator/cmake-build-debug/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="/usr/bin/make -j8 -f &quot;/Users/georgelorenzetti/Documents/GamePhysics/LiquidSimulator/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="/usr/bin/make -j8 -f &quot;/Users/georgelorenzetti/Documents/GamePhysics/LiquidSimulator/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+			<Target title="LiquidSimulator/fast">
+				<Option output="/Users/georgelorenzetti/Documents/GamePhysics/LiquidSimulator/cmake-build-debug/LiquidSimulator" prefix_auto="0" extension_auto="0"/>
+				<Option working_dir="/Users/georgelorenzetti/Documents/GamePhysics/LiquidSimulator/cmake-build-debug"/>
+				<Option object_output="./"/>
+				<Option type="1"/>
+				<Option compiler="gcc"/>
+				<Compiler>
+					<Add directory="/Library/Developer/CommandLineTools/usr/include/c++/v1"/>
+					<Add directory="/usr/local/include"/>
+					<Add directory="/Library/Developer/CommandLineTools/usr/lib/clang/9.1.0/include"/>
+					<Add directory="/Library/Developer/CommandLineTools/usr/include"/>
+					<Add directory="/usr/include"/>
+					<Add directory="/System/Library/Frameworks"/>
+					<Add directory="/Library/Frameworks"/>
+				</Compiler>
+				<MakeCommands>
+					<Build command="/usr/bin/make -j8 -f &quot;/Users/georgelorenzetti/Documents/GamePhysics/LiquidSimulator/cmake-build-debug/Makefile&quot;  VERBOSE=1 LiquidSimulator/fast"/>
+					<CompileFile command="/usr/bin/make -j8 -f &quot;/Users/georgelorenzetti/Documents/GamePhysics/LiquidSimulator/cmake-build-debug/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="/usr/bin/make -j8 -f &quot;/Users/georgelorenzetti/Documents/GamePhysics/LiquidSimulator/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="/usr/bin/make -j8 -f &quot;/Users/georgelorenzetti/Documents/GamePhysics/LiquidSimulator/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+		</Build>
+		<Unit filename="/Users/georgelorenzetti/Documents/GamePhysics/LiquidSimulator/App.config">
+			<Option target="LiquidSimulator"/>
+		</Unit>
+		<Unit filename="/Users/georgelorenzetti/Documents/GamePhysics/LiquidSimulator/OpenTK/Release/OpenTK.dll">
+			<Option target="LiquidSimulator"/>
+		</Unit>
+		<Unit filename="/Users/georgelorenzetti/Documents/GamePhysics/LiquidSimulator/OpenTK/Release/OpenTK.dll.config">
+			<Option target="LiquidSimulator"/>
+		</Unit>
+		<Unit filename="/Users/georgelorenzetti/Documents/GamePhysics/LiquidSimulator/Properties/AssemblyInfo.cs">
+			<Option target="LiquidSimulator"/>
+		</Unit>
+		<Unit filename="/Users/georgelorenzetti/Documents/GamePhysics/LiquidSimulator/Shapes/Sphere.cs">
+			<Option target="LiquidSimulator"/>
+		</Unit>
+		<Unit filename="/Users/georgelorenzetti/Documents/GamePhysics/LiquidSimulator/Util.cs">
+			<Option target="LiquidSimulator"/>
+		</Unit>
+		<Unit filename="/Users/georgelorenzetti/Documents/GamePhysics/LiquidSimulator/assets/font.png">
+			<Option target="LiquidSimulator"/>
+		</Unit>
+		<Unit filename="/Users/georgelorenzetti/Documents/GamePhysics/LiquidSimulator/assets/heightmap.png">
+			<Option target="LiquidSimulator"/>
+		</Unit>
+		<Unit filename="/Users/georgelorenzetti/Documents/GamePhysics/LiquidSimulator/bin/Debug/OpenTK.dll">
+			<Option target="LiquidSimulator"/>
+		</Unit>
+		<Unit filename="/Users/georgelorenzetti/Documents/GamePhysics/LiquidSimulator/bin/Debug/OpenTK.dll.config">
+			<Option target="LiquidSimulator"/>
+		</Unit>
+		<Unit filename="/Users/georgelorenzetti/Documents/GamePhysics/LiquidSimulator/bin/Debug/template.exe">
+			<Option target="LiquidSimulator"/>
+		</Unit>
+		<Unit filename="/Users/georgelorenzetti/Documents/GamePhysics/LiquidSimulator/bin/Debug/template.exe.config">
+			<Option target="LiquidSimulator"/>
+		</Unit>
+		<Unit filename="/Users/georgelorenzetti/Documents/GamePhysics/LiquidSimulator/bin/Debug/template.pdb">
+			<Option target="LiquidSimulator"/>
+		</Unit>
+		<Unit filename="/Users/georgelorenzetti/Documents/GamePhysics/LiquidSimulator/bin/Release/OpenTK.dll">
+			<Option target="LiquidSimulator"/>
+		</Unit>
+		<Unit filename="/Users/georgelorenzetti/Documents/GamePhysics/LiquidSimulator/bin/Release/OpenTK.dll.config">
+			<Option target="LiquidSimulator"/>
+		</Unit>
+		<Unit filename="/Users/georgelorenzetti/Documents/GamePhysics/LiquidSimulator/bin/Release/template.exe">
+			<Option target="LiquidSimulator"/>
+		</Unit>
+		<Unit filename="/Users/georgelorenzetti/Documents/GamePhysics/LiquidSimulator/bin/Release/template.exe.config">
+			<Option target="LiquidSimulator"/>
+		</Unit>
+		<Unit filename="/Users/georgelorenzetti/Documents/GamePhysics/LiquidSimulator/bin/Release/template.pdb">
+			<Option target="LiquidSimulator"/>
+		</Unit>
+		<Unit filename="/Users/georgelorenzetti/Documents/GamePhysics/LiquidSimulator/clean.bat">
+			<Option target="LiquidSimulator"/>
+		</Unit>
+		<Unit filename="/Users/georgelorenzetti/Documents/GamePhysics/LiquidSimulator/game.cs">
+			<Option target="LiquidSimulator"/>
+		</Unit>
+		<Unit filename="/Users/georgelorenzetti/Documents/GamePhysics/LiquidSimulator/obj/Debug/DesignTimeResolveAssemblyReferencesInput.cache">
+			<Option target="LiquidSimulator"/>
+		</Unit>
+		<Unit filename="/Users/georgelorenzetti/Documents/GamePhysics/LiquidSimulator/obj/Debug/TemporaryGeneratedFile_036C0B5B-1481-4323-8D20-8F5ADCB23D92.cs">
+			<Option target="LiquidSimulator"/>
+		</Unit>
+		<Unit filename="/Users/georgelorenzetti/Documents/GamePhysics/LiquidSimulator/obj/Debug/TemporaryGeneratedFile_5937a670-0e60-4077-877b-f7221da3dda1.cs">
+			<Option target="LiquidSimulator"/>
+		</Unit>
+		<Unit filename="/Users/georgelorenzetti/Documents/GamePhysics/LiquidSimulator/obj/Debug/TemporaryGeneratedFile_E7A71F73-0F8D-4B9B-B56E-8E70B10BC5D3.cs">
+			<Option target="LiquidSimulator"/>
+		</Unit>
+		<Unit filename="/Users/georgelorenzetti/Documents/GamePhysics/LiquidSimulator/obj/Debug/template.csproj.CopyComplete">
+			<Option target="LiquidSimulator"/>
+		</Unit>
+		<Unit filename="/Users/georgelorenzetti/Documents/GamePhysics/LiquidSimulator/obj/Debug/template.csproj.CoreCompileInputs.cache">
+			<Option target="LiquidSimulator"/>
+		</Unit>
+		<Unit filename="/Users/georgelorenzetti/Documents/GamePhysics/LiquidSimulator/obj/Debug/template.csproj.FileListAbsolute.txt">
+			<Option target="LiquidSimulator"/>
+		</Unit>
+		<Unit filename="/Users/georgelorenzetti/Documents/GamePhysics/LiquidSimulator/obj/Debug/template.csprojAssemblyReference.cache">
+			<Option target="LiquidSimulator"/>
+		</Unit>
+		<Unit filename="/Users/georgelorenzetti/Documents/GamePhysics/LiquidSimulator/obj/Debug/template.exe">
+			<Option target="LiquidSimulator"/>
+		</Unit>
+		<Unit filename="/Users/georgelorenzetti/Documents/GamePhysics/LiquidSimulator/obj/Debug/template.pdb">
+			<Option target="LiquidSimulator"/>
+		</Unit>
+		<Unit filename="/Users/georgelorenzetti/Documents/GamePhysics/LiquidSimulator/obj/Release/TemporaryGeneratedFile_036C0B5B-1481-4323-8D20-8F5ADCB23D92.cs">
+			<Option target="LiquidSimulator"/>
+		</Unit>
+		<Unit filename="/Users/georgelorenzetti/Documents/GamePhysics/LiquidSimulator/obj/Release/TemporaryGeneratedFile_5937a670-0e60-4077-877b-f7221da3dda1.cs">
+			<Option target="LiquidSimulator"/>
+		</Unit>
+		<Unit filename="/Users/georgelorenzetti/Documents/GamePhysics/LiquidSimulator/obj/Release/TemporaryGeneratedFile_E7A71F73-0F8D-4B9B-B56E-8E70B10BC5D3.cs">
+			<Option target="LiquidSimulator"/>
+		</Unit>
+		<Unit filename="/Users/georgelorenzetti/Documents/GamePhysics/LiquidSimulator/obj/Release/template.csproj.CopyComplete">
+			<Option target="LiquidSimulator"/>
+		</Unit>
+		<Unit filename="/Users/georgelorenzetti/Documents/GamePhysics/LiquidSimulator/obj/Release/template.csproj.CoreCompileInputs.cache">
+			<Option target="LiquidSimulator"/>
+		</Unit>
+		<Unit filename="/Users/georgelorenzetti/Documents/GamePhysics/LiquidSimulator/obj/Release/template.csproj.FileListAbsolute.txt">
+			<Option target="LiquidSimulator"/>
+		</Unit>
+		<Unit filename="/Users/georgelorenzetti/Documents/GamePhysics/LiquidSimulator/obj/Release/template.csprojAssemblyReference.cache">
+			<Option target="LiquidSimulator"/>
+		</Unit>
+		<Unit filename="/Users/georgelorenzetti/Documents/GamePhysics/LiquidSimulator/obj/Release/template.exe">
+			<Option target="LiquidSimulator"/>
+		</Unit>
+		<Unit filename="/Users/georgelorenzetti/Documents/GamePhysics/LiquidSimulator/obj/Release/template.pdb">
+			<Option target="LiquidSimulator"/>
+		</Unit>
+		<Unit filename="/Users/georgelorenzetti/Documents/GamePhysics/LiquidSimulator/packages.config">
+			<Option target="LiquidSimulator"/>
+		</Unit>
+		<Unit filename="/Users/georgelorenzetti/Documents/GamePhysics/LiquidSimulator/packages/System.Numerics.Vectors.4.1.1-beta-23516/System.Numerics.Vectors.4.1.1-beta-23516.nupkg">
+			<Option target="LiquidSimulator"/>
+		</Unit>
+		<Unit filename="/Users/georgelorenzetti/Documents/GamePhysics/LiquidSimulator/packages/System.Numerics.Vectors.4.1.1-beta-23516/lib/MonoAndroid10/_._">
+			<Option target="LiquidSimulator"/>
+		</Unit>
+		<Unit filename="/Users/georgelorenzetti/Documents/GamePhysics/LiquidSimulator/packages/System.Numerics.Vectors.4.1.1-beta-23516/lib/MonoTouch10/_._">
+			<Option target="LiquidSimulator"/>
+		</Unit>
+		<Unit filename="/Users/georgelorenzetti/Documents/GamePhysics/LiquidSimulator/packages/System.Numerics.Vectors.4.1.1-beta-23516/lib/dotnet5.4/System.Numerics.Vectors.dll">
+			<Option target="LiquidSimulator"/>
+		</Unit>
+		<Unit filename="/Users/georgelorenzetti/Documents/GamePhysics/LiquidSimulator/packages/System.Numerics.Vectors.4.1.1-beta-23516/lib/net46/System.Numerics.Vectors.dll">
+			<Option target="LiquidSimulator"/>
+		</Unit>
+		<Unit filename="/Users/georgelorenzetti/Documents/GamePhysics/LiquidSimulator/packages/System.Numerics.Vectors.4.1.1-beta-23516/lib/net46/_._">
+			<Option target="LiquidSimulator"/>
+		</Unit>
+		<Unit filename="/Users/georgelorenzetti/Documents/GamePhysics/LiquidSimulator/packages/System.Numerics.Vectors.4.1.1-beta-23516/lib/portable-net45+win8/System.Numerics.Vectors.dll">
+			<Option target="LiquidSimulator"/>
+		</Unit>
+		<Unit filename="/Users/georgelorenzetti/Documents/GamePhysics/LiquidSimulator/packages/System.Numerics.Vectors.4.1.1-beta-23516/lib/xamarinios10/_._">
+			<Option target="LiquidSimulator"/>
+		</Unit>
+		<Unit filename="/Users/georgelorenzetti/Documents/GamePhysics/LiquidSimulator/packages/System.Numerics.Vectors.4.1.1-beta-23516/lib/xamarinmac20/_._">
+			<Option target="LiquidSimulator"/>
+		</Unit>
+		<Unit filename="/Users/georgelorenzetti/Documents/GamePhysics/LiquidSimulator/packages/System.Numerics.Vectors.4.1.1-beta-23516/ref/MonoAndroid10/_._">
+			<Option target="LiquidSimulator"/>
+		</Unit>
+		<Unit filename="/Users/georgelorenzetti/Documents/GamePhysics/LiquidSimulator/packages/System.Numerics.Vectors.4.1.1-beta-23516/ref/MonoTouch10/_._">
+			<Option target="LiquidSimulator"/>
+		</Unit>
+		<Unit filename="/Users/georgelorenzetti/Documents/GamePhysics/LiquidSimulator/packages/System.Numerics.Vectors.4.1.1-beta-23516/ref/dotnet5.4/System.Numerics.Vectors.dll">
+			<Option target="LiquidSimulator"/>
+		</Unit>
+		<Unit filename="/Users/georgelorenzetti/Documents/GamePhysics/LiquidSimulator/packages/System.Numerics.Vectors.4.1.1-beta-23516/ref/net46/System.Numerics.Vectors.dll">
+			<Option target="LiquidSimulator"/>
+		</Unit>
+		<Unit filename="/Users/georgelorenzetti/Documents/GamePhysics/LiquidSimulator/packages/System.Numerics.Vectors.4.1.1-beta-23516/ref/net46/_._">
+			<Option target="LiquidSimulator"/>
+		</Unit>
+		<Unit filename="/Users/georgelorenzetti/Documents/GamePhysics/LiquidSimulator/packages/System.Numerics.Vectors.4.1.1-beta-23516/ref/xamarinios10/_._">
+			<Option target="LiquidSimulator"/>
+		</Unit>
+		<Unit filename="/Users/georgelorenzetti/Documents/GamePhysics/LiquidSimulator/packages/System.Numerics.Vectors.4.1.1-beta-23516/ref/xamarinmac20/_._">
+			<Option target="LiquidSimulator"/>
+		</Unit>
+		<Unit filename="/Users/georgelorenzetti/Documents/GamePhysics/LiquidSimulator/packages/repositories.config">
+			<Option target="LiquidSimulator"/>
+		</Unit>
+		<Unit filename="/Users/georgelorenzetti/Documents/GamePhysics/LiquidSimulator/surface.cs">
+			<Option target="LiquidSimulator"/>
+		</Unit>
+		<Unit filename="/Users/georgelorenzetti/Documents/GamePhysics/LiquidSimulator/template.cs">
+			<Option target="LiquidSimulator"/>
+		</Unit>
+		<Unit filename="/Users/georgelorenzetti/Documents/GamePhysics/LiquidSimulator/template.csproj">
+			<Option target="LiquidSimulator"/>
+		</Unit>
+		<Unit filename="/Users/georgelorenzetti/Documents/GamePhysics/LiquidSimulator/template.csproj.user">
+			<Option target="LiquidSimulator"/>
+		</Unit>
+		<Unit filename="/Users/georgelorenzetti/Documents/GamePhysics/LiquidSimulator/template.sln">
+			<Option target="LiquidSimulator"/>
+		</Unit>
+		<Unit filename="/Users/georgelorenzetti/Documents/GamePhysics/LiquidSimulator/template.v12.suo">
+			<Option target="LiquidSimulator"/>
+		</Unit>
+		<Unit filename="/Users/georgelorenzetti/Documents/GamePhysics/LiquidSimulator/CMakeLists.txt">
+			<Option virtualFolder="CMake Files\"/>
+		</Unit>
+	</Project>
+</CodeBlocks_project_file>
