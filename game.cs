@@ -40,10 +40,10 @@ namespace Template {
         bool showGrid = false;
         bool showBorders = true;
         // Keep threading false atm, issues with locking
-        private bool threading = true;
+        private bool threading = false;
 
         // Number of voxels in the grid per dimension
-        static int voxels = 32;
+        static int voxels = 64;
         static int visualisationVoxels = 32;
         bool[] visualisationVoxelSwitches = new bool[visualisationVoxels * visualisationVoxels * visualisationVoxels];
         // Size of one voxele
@@ -53,7 +53,7 @@ namespace Template {
         public static int currentPoints = 0;
 
         public Emitter[] emitters;
-        public static int numberOfPoints = 1000;
+        public static int numberOfPoints = 400;
 
         public static Sphere[] particles = new Sphere[numberOfPoints];
         public static Dictionary<int, List<int>> grid = new Dictionary<int, List<int>>();
@@ -131,28 +131,29 @@ namespace Template {
                 }
             }
             // If set to threading, split the taskforce up, but if the amount of points is too small then there's no point
-            if (threading && !(particles.Length < 100)) {
-                if (running || step) {
-                    int PPT = 8;
-                    var options = new ParallelOptions() {
+            if (threading && !(particles.Length < 100))
+            {
+                if(running || step){
+                    int PPT = 10;
+                    var options = new ParallelOptions()
+                    {
                         MaxDegreeOfParallelism = 8
                     };
-                    Parallel.For(0, currentPoints / PPT, options, i => {
-                        simulator.PropertiesUpdate(i * PPT, (i + 1) * PPT);
-                    });
-                    Parallel.For(0, currentPoints / PPT, options, i => {
+                    Parallel.For(0, particles.Length / PPT, options, i =>
+                      {
+                          simulator.PropertiesUpdate(i * PPT, (i + 1) * PPT);
+                      });
+                    Parallel.For(0, particles.Length / PPT, options, i =>
+                    {
                         simulator.ForcesUpdate(i * PPT, (i + 1) * PPT);
                     });
+
                     simulator.MovementUpdate();
-                    for (int i = 0; i < currentPoints; i++) {
+
+                    for (int i = 0; i < particles.Length; i++)
+                    {
                         particles[i].Update(dt);
                     }
-                    if (displayMode == Mode.CUBES) {
-                        Parallel.For(0, (visualisationVoxels * visualisationVoxels * visualisationVoxels) / PPT, options, i => {
-                            calcVoxelDensities(i * PPT, (i + 1) * PPT);
-                        });
-                    }
-                    step = false;
                 }
             } else {
                 //particles[i].Update(dt);
@@ -167,19 +168,19 @@ namespace Template {
         /// <summary>
         /// Calculates a density value for each voxel to decide whether it should be drawn
         /// </summary>
-        public void calcVoxelDensities(int start, int end) {
-            for (int i = start; i < end; i++) {
-                Vector3 position = getVisPosition(i);
-                position += new Vector3(visVoxelSize / 2.0f, visVoxelSize / 2.0f, visVoxelSize / 2.0f);
-                float density = FluidSim.calcDensity(position);
-                if (density > 20.0) {
-                    //Console.WriteLine(position + " " + density);
-                    visualisationVoxelSwitches[i] = true;
-                } else {
-                    visualisationVoxelSwitches[i] = false;
-                }
-            }
-        }
+        //public void calcVoxelDensities(int start, int end) {
+        //    for (int i = start; i < end; i++) {
+        //        Vector3 position = getVisPosition(i);
+        //        position += new Vector3(visVoxelSize / 2.0f, visVoxelSize / 2.0f, visVoxelSize / 2.0f);
+        //        float density = FluidSim.calcDensity(position);
+        //        if (density > 20.0) {
+        //            //Console.WriteLine(position + " " + density);
+        //            visualisationVoxelSwitches[i] = true;
+        //        } else {
+        //            visualisationVoxelSwitches[i] = false;
+        //        }
+        //    }
+        //}
 
         /// <summary>
         /// Does the logic of what to draw
@@ -577,8 +578,8 @@ namespace Template {
             }
             int count = 0;
 
-            int val = 20;
-            float step = dim / val;
+            int val = 50;
+            float step = dim / 50;
 
             for (int i = 0; i <= val; i++)
             {
@@ -588,12 +589,11 @@ namespace Template {
                     {
                         if (count < numberOfPoints)
                         {
-
-                            particles[count] = new Sphere(count, new Vector3(step * i, step * j / 1.3f, step * k), Vector3.Zero, 0.001f);
+                            particles[count] = new Sphere(count, new Vector3( step * j, step * k, step * i), Vector3.Zero, 0.001f);;
                             particles[count].color = new Vector3(0.5f, 0, 0);
                             particles[count].Mass = 0.3f;
                             particles[count].NetForce = new Vector3(0, 0, 0);
-                            if ((k == 0 && j == 0 && i == 0) || (k == 9 && j == 9 && i == 2))
+                            if (count > 396)
                             {
                                 particles[count].verbose = false;
                             }
