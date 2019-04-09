@@ -1,7 +1,0 @@
-/Applications/CLion.app/Contents/bin/cmake/mac/bin/cmake -DCMAKE_BUILD_TYPE=Debug -G "CodeBlocks - Unix Makefiles" /Users/georgelorenzetti/Documents/GamePhysics/LiquidSimulator
--- Configuring done
-CMake Error: CMake can not determine linker language for target: LiquidSimulator
-CMake Error: Cannot determine link language for target "LiquidSimulator".
--- Generating done
--- Build files have been written to: /Users/georgelorenzetti/Documents/GamePhysics/LiquidSimulator/cmake-build-debug
-Unable to determine product file path for target LiquidSimulator. Running and debugging will be unavailable.
