@@ -23,7 +23,7 @@ namespace Template {
             SHAPES      //Displays whatever shape we decided to give particles (tilted cube atm)
         }
 
-        public Mode displayMode = Mode.PARTICLES;
+        public Mode displayMode = Mode.SHAPES;
 
         public static bool Recording = false;
         public bool running = false;
@@ -661,45 +661,71 @@ namespace Template {
 
         public Vector3[] getShapeNormals(Vector3 Position){
             Vector3[] v = new Vector3[6];
-            v[0] = new Vector3(0, 0, -Radius);
-            v[1] = new Vector3(0, 0, Radius);
-            v[2] = new Vector3(0, -Radius, 0);
-            v[3] = new Vector3(0, Radius, 0);
-            v[4] = new Vector3(-Radius, 0, 0);
-            v[5] = new Vector3(Radius, 0, 0);
+            v[0] = Position + new Vector3(0, 0, -Radius);
+            v[1] = Position + new Vector3(0, 0, Radius);
+            v[2] = Position + new Vector3(0, -Radius, 0);
+            v[3] = Position + new Vector3(0, Radius, 0);
+            v[4] = Position + new Vector3(-Radius, 0, 0);
+            v[5] = Position + new Vector3(Radius, 0, 0);
 
             Vector3[] t = new Vector3[24];
-            t[0] = v[0];
-            t[1] = v[2];
-            t[2] = v[4];
+            Vector3 v1, v2, v3;
 
-            t[3] = v[0];
-            t[4] = v[4];
-            t[5] = v[3];
+            v1 = v[0] - v[3];
+            v2 = v[5] - v[3];
+            v3 = Vector3.Cross(v1, v2);
+            t[0] = -v3;
+            t[1] = -v3;
+            t[2] = -v3;
 
-            t[6] = v[0];
-            t[7] = v[5];
-            t[8] = v[3];
+            v1 = v[0] - v[2];
+            v2 = v[4] - v[2];
+            v3 = Vector3.Cross(v1, v2);
+            t[3] = v3;
+            t[4] = v3;
+            t[5] = v3;
 
-            t[9] = v[0];
-            t[10] = v[5];
-            t[11] = v[2];
+            v1 = v[0] - v[3];
+            v2 = v[4] - v[3];
+            v3 = Vector3.Cross(v1, v2);
+            t[6] = -v3;
+            t[7] = -v3;
+            t[8] = -v3;
 
-            t[12] = v[1];
-            t[13] = v[2];
-            t[14] = v[4];
+            v1 = v[0] - v[2];
+            v2 = v[5] - v[2];
+            v3 = Vector3.Cross(v1, v2);
+            t[9] = -v3;
+            t[10] = -v3;
+            t[11] = -v3;
 
-            t[15] = v[1];
-            t[16] = v[2];
-            t[17] = v[5];
+            v1 = v[1] - v[2];
+            v2 = v[4] - v[2];
+            v3 = Vector3.Cross(v1, v2);
+            t[12] = -v3;
+            t[13] = -v3;
+            t[14] = -v3;
 
-            t[18] = v[1];
-            t[19] = v[3];
-            t[20] = v[4];
+            v1 = v[1] - v[3];
+            v2 = v[5] - v[3];
+            v3 = Vector3.Cross(v1, v2);
+            t[15] = v3;
+            t[16] = v3;
+            t[17] = v3;
 
-            t[21] = v[1];
-            t[22] = v[3];
-            t[23] = v[5];
+            v1 = v[1] - v[3];
+            v2 = v[4] - v[3];
+            v3 = Vector3.Cross(v1, v2);
+            t[18] = -v3;
+            t[19] = -v3;
+            t[20] = -v3;
+
+            v1 = v[1] - v[2];
+            v2 = v[5] - v[2];
+            v3 = Vector3.Cross(v1, v2);
+            t[21] = -v3;
+            t[22] = -v3;
+            t[23] = -v3;
             return t;
         }
     }
