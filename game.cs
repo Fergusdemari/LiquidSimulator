@@ -52,7 +52,6 @@ namespace Template
         public float Radius = 0.01f;
         //Debug showing
         bool showGrid = false;
-        bool showBorders = true;
         // Keep threading false atm, issues with locking
         private bool threading = true;
 
@@ -82,6 +81,8 @@ namespace Template
 
         public Vector3[] vertexBuffer;
         public Vector3[] normalsBuffer;
+
+        public Vector3[] texturecoordBuffer;
 
         public static int RNGSeed;
 
@@ -320,6 +321,7 @@ namespace Template
             normals.CopyTo(normalsBuffer, boundsVertices.Length);
             cubeNormals.CopyTo(normalsBuffer, normals.Length + boundsVertices.Length);
             vertexBuffer = new Vector3[vertices.Length + boundsVertices.Length + cubeVertices.Length];
+            texturecoordBuffer = new Vector3[vertices.Length + boundsVertices.Length + cubeVertices.Length];
             boundsVertices.CopyTo(vertexBuffer, 0);
             vertices.CopyTo(vertexBuffer, boundsVertices.Length);
             cubeVertices.CopyTo(vertexBuffer, vertices.Length + boundsVertices.Length);
@@ -352,6 +354,75 @@ namespace Template
         #endregion
 
         #region DebugDrawMethods
+
+
+        public static void RenderSkyBox()
+        {
+            GL.Enable(EnableCap.Texture2D);
+            GL.Color4(1f, 1f, 1f, 1f);
+
+            GL.BindTexture(TextureTarget.Texture2D, OpenTKApp.skybox[0].Id);
+
+            GL.TexCoord2(0, 0); GL.Vertex3(3f, -3f, -3f);
+            GL.TexCoord2(1, 0); GL.Vertex3(-3f, -3f, -3f);
+            GL.TexCoord2(1, 1); GL.Vertex3(-3f, 3f, -3f);
+
+            GL.TexCoord2(0, 0); GL.Vertex3(3f, -3f, -3f);
+            GL.TexCoord2(1, 1); GL.Vertex3(-3f, 3f, -3f);
+            GL.TexCoord2(0, 1); GL.Vertex3(3f, 3f, -3f);
+
+
+            GL.BindTexture(TextureTarget.Texture2D, OpenTKApp.skybox[1].Id);
+            GL.TexCoord2(0, 0); GL.Vertex3(3f, -3f, 3f);
+            GL.TexCoord2(1, 0); GL.Vertex3(3f, -3f, -3f);
+            GL.TexCoord2(1, 1); GL.Vertex3(3f, 3f, -3f);
+
+            GL.TexCoord2(0, 0); GL.Vertex3(3f, -3f, 3f);
+            GL.TexCoord2(1, 1); GL.Vertex3(3f, 3f, -3f);
+            GL.TexCoord2(0, 1); GL.Vertex3(3f, 3f, 3f);
+
+
+            GL.BindTexture(TextureTarget.Texture2D, OpenTKApp.skybox[2].Id);
+            GL.TexCoord2(0, 0); GL.Vertex3(-3f, -3f, 3f);
+            GL.TexCoord2(1, 0); GL.Vertex3(3f, -3f, 3f);
+            GL.TexCoord2(1, 1); GL.Vertex3(3f, 3f, 3f);
+
+            GL.TexCoord2(0, 0); GL.Vertex3(-3f, -3f, 3f);
+            GL.TexCoord2(0, 1); GL.Vertex3(-3f, 3f, 3f);
+            GL.TexCoord2(1, 1); GL.Vertex3(3f, 3f, 3f);
+
+            GL.BindTexture(TextureTarget.Texture2D, OpenTKApp.skybox[3].Id);
+
+            GL.TexCoord2(0, 0); GL.Vertex3(-3f, -3f, -3f);
+            GL.TexCoord2(1, 0); GL.Vertex3(-3f, -3f, 3f);
+            GL.TexCoord2(1, 1); GL.Vertex3(-3f, 3f, 3f);
+
+            GL.TexCoord2(0, 0); GL.Vertex3(-3f, -3f, -3f);
+            GL.TexCoord2(1, 1); GL.Vertex3(-3f, 3f, 3f);
+            GL.TexCoord2(0, 1); GL.Vertex3(-3f, 3f, -3f);
+
+
+            GL.BindTexture(TextureTarget.Texture2D, OpenTKApp.skybox[4].Id);
+            GL.TexCoord2(0, 0); GL.Vertex3(-3f, 3f, -3f);
+            GL.TexCoord2(1, 0); GL.Vertex3(-3f, 3f, 3f);
+            GL.TexCoord2(1, 1); GL.Vertex3(3f, 3f, 3f);
+
+            GL.TexCoord2(0, 0); GL.Vertex3(-3f, 3f, -3f);
+            GL.TexCoord2(1, 1); GL.Vertex3(3f, 3f, 3f);
+            GL.TexCoord2(0, 1); GL.Vertex3(3f, 3f, -3f);
+
+
+            GL.BindTexture(TextureTarget.Texture2D, OpenTKApp.skybox[5].Id);
+            GL.TexCoord2(0, 0); GL.Vertex3(-3f, -3f, -3f);
+            GL.TexCoord2(1, 0); GL.Vertex3(-3f, -3f, 3f);
+            GL.TexCoord2(1, 1); GL.Vertex3(3f, -3f, 3f);
+
+            GL.TexCoord2(0, 0); GL.Vertex3(-3f, -3f, -3f);
+            GL.TexCoord2(1, 1); GL.Vertex3(3f, -3f, 3f);
+            GL.TexCoord2(0, 1); GL.Vertex3(3f, -3f, -3f);
+
+            GL.Disable(EnableCap.Texture2D);
+        }
 
         /// <summary>
         /// Draws just the borders surrounding the area, very useful
@@ -800,7 +871,7 @@ namespace Template
             float step = dim / 50;
             if (scene == 2)
             {
-                numberOfPoints = 8000;
+                numberOfPoints = 1000;
                 particles = new Sphere[numberOfPoints];
                 grid = new Dictionary<int, List<int>>();
                 for (int i = 0; i < voxels * voxels * voxels; i++)

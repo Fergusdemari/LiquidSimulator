@@ -115,7 +115,6 @@ namespace Template
             VSync = VSyncMode.On;
 
             CreateShaders();
-            GL.Enable(EnableCap.Texture2D);
             skybox = LoadSkybox("Skybox (2)/");
             // Other state
             GL.Enable(EnableCap.DepthTest);
@@ -155,7 +154,9 @@ namespace Template
 
         protected override void OnRenderFrame(FrameEventArgs e)
         {
+
             game.RenderGL();
+
             if (Game.Recording) {
                 SaveImage();
             }
@@ -226,13 +227,12 @@ namespace Template
 
             GL.Clear(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit);
 
+            RenderSkyBox();
+
             GL.BindVertexArray(vaoHandle2);
 
             GL.UniformMatrix4(projectionMatrixLocation, false, ref projectionMatrix);
             GL.UniformMatrix4(modelviewMatrixLocation, false, ref modelviewMatrix);
-
-
-            RenderSkyBox();
 
             GL.DrawArrays(PrimitiveType.Lines, 0, game.boundsVertices.Length);
             if(Game.displayMode == Game.Mode.PARTICLES){
@@ -249,7 +249,8 @@ namespace Template
 
         private void RenderSkyBox()
         {
-            //GL.Color4(1f, 1f, 1f, 1f);
+            GL.Enable(EnableCap.Texture2D);
+            GL.Color4(1f, 1f, 1f, 1f);
 
             GL.BindTexture(TextureTarget.Texture2D, skybox[0].Id);
             GL.Begin(PrimitiveType.Quads);
@@ -304,7 +305,7 @@ namespace Template
             GL.TexCoord2(0, 1); GL.Vertex3(3f, -3f, -3f);
             GL.End();
 
-
+            GL.Disable(EnableCap.Texture2D);
         }
 
         private void SaveImage()
@@ -489,6 +490,7 @@ namespace Template
 
         public static Texture2D[] LoadSkybox(string filePath)
         {
+            GL.Color3(1f, 1f, 1f);
             string[] fileNames = { "penguin.png", "negy.jpg", "negz.jpg", "posx.jpg", "posy.jpg", "posz.jpg"};
             Texture2D[] results = new Texture2D[6];
             for (int i = 0; i < 6; i++)
