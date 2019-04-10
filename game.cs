@@ -128,7 +128,7 @@ namespace Template
             }
             else if (scene == 1)
             {
-                gravity = -0.981f;
+                gravity = -9.81f;
                 cubes = new Cube[2];
                 cubes[0] = new Cube();
                 cubes[0].centre = new Vector3(0.4f, 0.5f, 0);
