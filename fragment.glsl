@@ -12,6 +12,6 @@ void main(void)
          out_frag_color = vec4(0.87, 0.25, 0.96, 1.0);
     }else{
         float diffuse = clamp(dot(lightVecNormalized, normalize(normal)), 0.0, 1.0);
-        out_frag_color = vec4(ambient + diffuse * colour * 0.7, 1.0);
+        out_frag_color = vec4(ambient + diffuse * colour, 1.0);
     }
 }

@@ -9,7 +9,8 @@ using template.Shapes;
 namespace Template {
     struct Emitter {
         public Vector3 position;
-        public float radius;
+        public float Xradius;
+        public float Zradius;
         public int emissionRate;
         public int delay;
         public int tickCounter;
@@ -32,7 +33,7 @@ namespace Template {
         }
 
         public static Mode displayMode = Mode.SHAPES;
-
+        public int sceneNumber = 1;
         public static bool Recording = false;
         public bool running = false;
         public bool step = false;
@@ -48,10 +49,10 @@ namespace Template {
         bool showGrid = false;
         bool showBorders = true;
         // Keep threading false atm, issues with locking
-        private bool threading = true;
+        private bool threading = false;
 
         // Number of voxels in the grid per dimension
-        static int voxels = 64;
+        static int voxels = 32;
         static int visualisationVoxels = 32;
         bool[] visualisationVoxelSwitches = new bool[visualisationVoxels * visualisationVoxels * visualisationVoxels];
         // Size of one voxele
@@ -85,6 +86,7 @@ namespace Template {
 
         // initialize
         public void Init() {
+            currentPoints = 0;
             // Just some seed code to keep the same seed during the same run
             Random seedCreator = new Random();
             RNGSeed = seedCreator.Next(int.MaxValue);
@@ -96,26 +98,43 @@ namespace Template {
             for (int i = 0; i < voxels * voxels * voxels; i++) {
                 grid.Add(i, new List<int>());
             }
-            emitters = new Emitter[1];
-            emitters[0] = new Emitter();
-            emitters[0].position = new Vector3(0.0f, 0.95f, 0.5f);
-            emitters[0].radius = 0.1f;
-            emitters[0].velocity = new Vector3(0.4f, -0.2f, 0.01f);
-            emitters[0].emissionRate = 5;
-            emitters[0].delay = 5;
-            emitters[0].tickCounter = 0;
-            RestartScene(true);
 
+            emitters = new Emitter[0];
+            cubes = new Cube[0];
+            initialiseScene(sceneNumber);
 
-            cubes = new Cube[1];
-            cubes[0] = new Cube();
-            cubes[0].centre = new Vector3(0.5f, 0.1f, 0);
-            cubes[0].height = 0.2f;
-            cubes[0].depth = 0.05f;
-            cubes[0].width = 0.2f;
             //start fluid simulator
-            simulator = new FluidSim(numberOfPoints, dt, particles, voxelSize);
+
             //int[] t = neighborsIndicesConcatenated();
+        }
+
+        public void initialiseScene(int scene){
+            simulator = new FluidSim(numberOfPoints, dt, particles, voxelSize);
+            if(scene == 0){
+                simulator.viscosity = 0.3f;
+                simulator.p0 = 1.0f;
+                simulator.d = 0.23f;
+                simulator.sigma = 4000.0f;
+                RestartScene(true, scene);
+            }
+            if (scene == 1)
+            {
+                cubes = new Cube[2];
+                cubes[0] = new Cube();
+                cubes[0].centre = new Vector3(0.4f, 0.5f, 0);
+                cubes[0].height = 0.05f;
+                cubes[0].depth = 0.05f;
+                cubes[0].width = 0.8f;
+
+                cubes[1] = new Cube();
+                cubes[1].centre = new Vector3(0.98f, 0.5f, 0);
+                cubes[1].height = 0.05f;
+                cubes[1].depth = 0.05f;
+                cubes[1].width = 0.14f;
+
+                RestartScene(true, scene);
+            }
+
         }
 
         /// <summary>
@@ -128,9 +147,10 @@ namespace Template {
                 for (int i = 0; i < emitters.Length; i++) {
                     if (emitters[i].tickCounter == 0) {
                         for (int j = 0; j < emitters[i].emissionRate; j++) {
-                            float rad = (float)Math.Sqrt(r.NextDouble()) * emitters[i].radius;
+                            float Xrad = (float)Math.Sqrt(r.NextDouble()) * emitters[i].Xradius;
+                            float Zrad = (float)Math.Sqrt(r.NextDouble()) * emitters[i].Zradius;
                             float angle = (float)r.NextDouble() * (float)Math.PI * 2;
-                            Vector3 pos = new Vector3(emitters[i].position.X, emitters[i].position.Y + rad * (float)Math.Cos(angle), emitters[i].position.Z + rad * (float)Math.Sin(angle));
+                            Vector3 pos = new Vector3(emitters[i].position.X, emitters[i].position.Y + Xrad * (float)Math.Cos(angle), emitters[i].position.Z + Zrad * (float)Math.Sin(angle));
 
                             particles[currentPoints] = (new Sphere(currentPoints, pos, emitters[i].velocity, 0.01f));
                             particles[currentPoints].color = new Vector3(1.0f, 0, 0);
@@ -154,18 +174,18 @@ namespace Template {
                     {
                         MaxDegreeOfParallelism = 8
                     };
-                    Parallel.For(0, particles.Length / PPT, options, i =>
+                    Parallel.For(0, currentPoints / PPT, options, i =>
                       {
                           simulator.PropertiesUpdate(i * PPT, (i + 1) * PPT);
                       });
-                    Parallel.For(0, particles.Length / PPT, options, i =>
+                    Parallel.For(0, currentPoints / PPT, options, i =>
                     {
                         simulator.ForcesUpdate(i * PPT, (i + 1) * PPT);
                     });
 
                     simulator.MovementUpdate();
 
-                    for (int i = 0; i < particles.Length; i++)
+                    for (int i = 0; i < currentPoints; i++)
                     {
                         particles[i].Update(dt);
                     }
@@ -217,7 +237,7 @@ namespace Template {
                     for (int i = 0; i < currentPoints; i++)
                     {
                         vertices[i] = particles[i].Position;
-                        normals[i] = new Vector3(-0.5f, 0.5f, -2.0f);
+                        normals[i] = new Vector3(0.5f, -0.5f, 2.0f);
                     }
                     break;
                 case Mode.CUBES:
@@ -322,90 +342,90 @@ namespace Template {
             cubeNormals = new Vector3[36 * cubes.Length];
             for(int i = 0; i < cubes.Length; i++)
             {
-                cubeVertices[i] = new Vector3(cubes[i].centre.X + cubes[i].width/2, cubes[i].centre.Y + cubes[i].height/2, cubes[i].centre.Z + cubes[i].depth/2 );
-                cubeVertices[i+1] = new Vector3(cubes[i].centre.X + cubes[i].width/2, cubes[i].centre.Y + cubes[i].height/2, cubes[i].centre.Z - cubes[i].depth/2 );
-                cubeVertices[i+2] = new Vector3(cubes[i].centre.X - cubes[i].width/2, cubes[i].centre.Y + cubes[i].height/2, cubes[i].centre.Z + cubes[i].depth/2 );
-                cubeVertices[i+3] = new Vector3(cubes[i].centre.X + cubes[i].width/2, cubes[i].centre.Y + cubes[i].height/2, cubes[i].centre.Z - cubes[i].depth/2 );
-                cubeVertices[i+4] = new Vector3(cubes[i].centre.X - cubes[i].width/2, cubes[i].centre.Y + cubes[i].height/2, cubes[i].centre.Z + cubes[i].depth/2 );
-                cubeVertices[i+5] = new Vector3(cubes[i].centre.X - cubes[i].width/2, cubes[i].centre.Y + cubes[i].height/2, cubes[i].centre.Z - cubes[i].depth/2 );
+                cubeVertices[36*i] = new Vector3(cubes[i].centre.X + cubes[i].width/2, cubes[i].centre.Y + cubes[i].height/2, cubes[i].centre.Z + cubes[i].depth/2 );
+                cubeVertices[36*i+1] = new Vector3(cubes[i].centre.X + cubes[i].width/2, cubes[i].centre.Y + cubes[i].height/2, cubes[i].centre.Z - cubes[i].depth/2 );
+                cubeVertices[36*i+2] = new Vector3(cubes[i].centre.X - cubes[i].width/2, cubes[i].centre.Y + cubes[i].height/2, cubes[i].centre.Z + cubes[i].depth/2 );
+                cubeVertices[36*i+3] = new Vector3(cubes[i].centre.X + cubes[i].width/2, cubes[i].centre.Y + cubes[i].height/2, cubes[i].centre.Z - cubes[i].depth/2 );
+                cubeVertices[36*i+4] = new Vector3(cubes[i].centre.X - cubes[i].width/2, cubes[i].centre.Y + cubes[i].height/2, cubes[i].centre.Z + cubes[i].depth/2 );
+                cubeVertices[36*i+5] = new Vector3(cubes[i].centre.X - cubes[i].width/2, cubes[i].centre.Y + cubes[i].height/2, cubes[i].centre.Z - cubes[i].depth/2 );
 
-                cubeVertices[i+6] = new Vector3(cubes[i].centre.X + cubes[i].width/2, cubes[i].centre.Y - cubes[i].height/2, cubes[i].centre.Z + cubes[i].depth/2 );
-                cubeVertices[i+7] = new Vector3(cubes[i].centre.X + cubes[i].width/2, cubes[i].centre.Y - cubes[i].height/2, cubes[i].centre.Z - cubes[i].depth/2 );
-                cubeVertices[i+8] = new Vector3(cubes[i].centre.X - cubes[i].width/2, cubes[i].centre.Y - cubes[i].height/2, cubes[i].centre.Z + cubes[i].depth/2 );
-                cubeVertices[i+9] = new Vector3(cubes[i].centre.X + cubes[i].width/2, cubes[i].centre.Y - cubes[i].height/2, cubes[i].centre.Z - cubes[i].depth/2 );
-                cubeVertices[i+10] = new Vector3(cubes[i].centre.X - cubes[i].width/2, cubes[i].centre.Y - cubes[i].height/2, cubes[i].centre.Z + cubes[i].depth/2 );
-                cubeVertices[i+11] = new Vector3(cubes[i].centre.X - cubes[i].width/2, cubes[i].centre.Y - cubes[i].height/2, cubes[i].centre.Z - cubes[i].depth/2 );
+                cubeVertices[36*i+6] = new Vector3(cubes[i].centre.X + cubes[i].width/2, cubes[i].centre.Y - cubes[i].height/2, cubes[i].centre.Z + cubes[i].depth/2 );
+                cubeVertices[36*i+7] = new Vector3(cubes[i].centre.X + cubes[i].width/2, cubes[i].centre.Y - cubes[i].height/2, cubes[i].centre.Z - cubes[i].depth/2 );
+                cubeVertices[36*i+8] = new Vector3(cubes[i].centre.X - cubes[i].width/2, cubes[i].centre.Y - cubes[i].height/2, cubes[i].centre.Z + cubes[i].depth/2 );
+                cubeVertices[36*i+9] = new Vector3(cubes[i].centre.X + cubes[i].width/2, cubes[i].centre.Y - cubes[i].height/2, cubes[i].centre.Z - cubes[i].depth/2 );
+                cubeVertices[36*i+10] = new Vector3(cubes[i].centre.X - cubes[i].width/2, cubes[i].centre.Y - cubes[i].height/2, cubes[i].centre.Z + cubes[i].depth/2 );
+                cubeVertices[36*i+11] = new Vector3(cubes[i].centre.X - cubes[i].width/2, cubes[i].centre.Y - cubes[i].height/2, cubes[i].centre.Z - cubes[i].depth/2 );
 
-                cubeVertices[i+12] = new Vector3(cubes[i].centre.X + cubes[i].width/2, cubes[i].centre.Y + cubes[i].height/2, cubes[i].centre.Z + cubes[i].depth/2 );
-                cubeVertices[i+13] = new Vector3(cubes[i].centre.X + cubes[i].width/2, cubes[i].centre.Y + cubes[i].height/2, cubes[i].centre.Z - cubes[i].depth/2 );
-                cubeVertices[i+14] = new Vector3(cubes[i].centre.X + cubes[i].width/2, cubes[i].centre.Y - cubes[i].height/2, cubes[i].centre.Z + cubes[i].depth/2 );
-                cubeVertices[i+15] = new Vector3(cubes[i].centre.X + cubes[i].width/2, cubes[i].centre.Y + cubes[i].height/2, cubes[i].centre.Z - cubes[i].depth/2 );
-                cubeVertices[i+16] = new Vector3(cubes[i].centre.X + cubes[i].width/2, cubes[i].centre.Y - cubes[i].height/2, cubes[i].centre.Z + cubes[i].depth/2 );
-                cubeVertices[i+17] = new Vector3(cubes[i].centre.X + cubes[i].width/2, cubes[i].centre.Y - cubes[i].height/2, cubes[i].centre.Z - cubes[i].depth/2 );
+                cubeVertices[36*i+12] = new Vector3(cubes[i].centre.X + cubes[i].width/2, cubes[i].centre.Y + cubes[i].height/2, cubes[i].centre.Z + cubes[i].depth/2 );
+                cubeVertices[36*i+13] = new Vector3(cubes[i].centre.X + cubes[i].width/2, cubes[i].centre.Y + cubes[i].height/2, cubes[i].centre.Z - cubes[i].depth/2 );
+                cubeVertices[36*i+14] = new Vector3(cubes[i].centre.X + cubes[i].width/2, cubes[i].centre.Y - cubes[i].height/2, cubes[i].centre.Z + cubes[i].depth/2 );
+                cubeVertices[36*i+15] = new Vector3(cubes[i].centre.X + cubes[i].width/2, cubes[i].centre.Y + cubes[i].height/2, cubes[i].centre.Z - cubes[i].depth/2 );
+                cubeVertices[36*i+16] = new Vector3(cubes[i].centre.X + cubes[i].width/2, cubes[i].centre.Y - cubes[i].height/2, cubes[i].centre.Z + cubes[i].depth/2 );
+                cubeVertices[36*i+17] = new Vector3(cubes[i].centre.X + cubes[i].width/2, cubes[i].centre.Y - cubes[i].height/2, cubes[i].centre.Z - cubes[i].depth/2 );
 
-                cubeVertices[i+18] = new Vector3(cubes[i].centre.X - cubes[i].width/2, cubes[i].centre.Y + cubes[i].height/2, cubes[i].centre.Z + cubes[i].depth/2 );
-                cubeVertices[i+19] = new Vector3(cubes[i].centre.X - cubes[i].width/2, cubes[i].centre.Y + cubes[i].height/2, cubes[i].centre.Z - cubes[i].depth/2 );
-                cubeVertices[i+20] = new Vector3(cubes[i].centre.X - cubes[i].width/2, cubes[i].centre.Y - cubes[i].height/2, cubes[i].centre.Z + cubes[i].depth/2 );
-                cubeVertices[i+21] = new Vector3(cubes[i].centre.X - cubes[i].width/2, cubes[i].centre.Y + cubes[i].height/2, cubes[i].centre.Z - cubes[i].depth/2 );
-                cubeVertices[i+22] = new Vector3(cubes[i].centre.X - cubes[i].width/2, cubes[i].centre.Y - cubes[i].height/2, cubes[i].centre.Z + cubes[i].depth/2 );
-                cubeVertices[i+23] = new Vector3(cubes[i].centre.X - cubes[i].width/2, cubes[i].centre.Y - cubes[i].height/2, cubes[i].centre.Z - cubes[i].depth/2 );
+                cubeVertices[36*i+18] = new Vector3(cubes[i].centre.X - cubes[i].width/2, cubes[i].centre.Y + cubes[i].height/2, cubes[i].centre.Z + cubes[i].depth/2 );
+                cubeVertices[36*i+19] = new Vector3(cubes[i].centre.X - cubes[i].width/2, cubes[i].centre.Y + cubes[i].height/2, cubes[i].centre.Z - cubes[i].depth/2 );
+                cubeVertices[36*i+20] = new Vector3(cubes[i].centre.X - cubes[i].width/2, cubes[i].centre.Y - cubes[i].height/2, cubes[i].centre.Z + cubes[i].depth/2 );
+                cubeVertices[36*i+21] = new Vector3(cubes[i].centre.X - cubes[i].width/2, cubes[i].centre.Y + cubes[i].height/2, cubes[i].centre.Z - cubes[i].depth/2 );
+                cubeVertices[36*i+22] = new Vector3(cubes[i].centre.X - cubes[i].width/2, cubes[i].centre.Y - cubes[i].height/2, cubes[i].centre.Z + cubes[i].depth/2 );
+                cubeVertices[36*i+23] = new Vector3(cubes[i].centre.X - cubes[i].width/2, cubes[i].centre.Y - cubes[i].height/2, cubes[i].centre.Z - cubes[i].depth/2 );
 
-                cubeVertices[i+24] = new Vector3(cubes[i].centre.X + cubes[i].width/2, cubes[i].centre.Y + cubes[i].height/2, cubes[i].centre.Z + cubes[i].depth/2 );
-                cubeVertices[i+25] = new Vector3(cubes[i].centre.X + cubes[i].width/2, cubes[i].centre.Y - cubes[i].height/2, cubes[i].centre.Z + cubes[i].depth/2 );
-                cubeVertices[i+26] = new Vector3(cubes[i].centre.X - cubes[i].width/2, cubes[i].centre.Y + cubes[i].height/2, cubes[i].centre.Z + cubes[i].depth/2 );
-                cubeVertices[i+27] = new Vector3(cubes[i].centre.X + cubes[i].width/2, cubes[i].centre.Y - cubes[i].height/2, cubes[i].centre.Z + cubes[i].depth/2 );
-                cubeVertices[i+28] = new Vector3(cubes[i].centre.X - cubes[i].width/2, cubes[i].centre.Y + cubes[i].height/2, cubes[i].centre.Z + cubes[i].depth/2 );
-                cubeVertices[i+29] = new Vector3(cubes[i].centre.X - cubes[i].width/2, cubes[i].centre.Y - cubes[i].height/2, cubes[i].centre.Z + cubes[i].depth/2 );
+                cubeVertices[36*i+24] = new Vector3(cubes[i].centre.X + cubes[i].width/2, cubes[i].centre.Y + cubes[i].height/2, cubes[i].centre.Z + cubes[i].depth/2 );
+                cubeVertices[36*i+25] = new Vector3(cubes[i].centre.X + cubes[i].width/2, cubes[i].centre.Y - cubes[i].height/2, cubes[i].centre.Z + cubes[i].depth/2 );
+                cubeVertices[36*i+26] = new Vector3(cubes[i].centre.X - cubes[i].width/2, cubes[i].centre.Y + cubes[i].height/2, cubes[i].centre.Z + cubes[i].depth/2 );
+                cubeVertices[36*i+27] = new Vector3(cubes[i].centre.X + cubes[i].width/2, cubes[i].centre.Y - cubes[i].height/2, cubes[i].centre.Z + cubes[i].depth/2 );
+                cubeVertices[36*i+28] = new Vector3(cubes[i].centre.X - cubes[i].width/2, cubes[i].centre.Y + cubes[i].height/2, cubes[i].centre.Z + cubes[i].depth/2 );
+                cubeVertices[36*i+29] = new Vector3(cubes[i].centre.X - cubes[i].width/2, cubes[i].centre.Y - cubes[i].height/2, cubes[i].centre.Z + cubes[i].depth/2 );
 
-                cubeVertices[i+30] = new Vector3(cubes[i].centre.X + cubes[i].width/2, cubes[i].centre.Y + cubes[i].height/2, cubes[i].centre.Z - cubes[i].depth/2 );
-                cubeVertices[i+31] = new Vector3(cubes[i].centre.X + cubes[i].width/2, cubes[i].centre.Y - cubes[i].height/2, cubes[i].centre.Z - cubes[i].depth/2 );
-                cubeVertices[i+32] = new Vector3(cubes[i].centre.X - cubes[i].width/2, cubes[i].centre.Y + cubes[i].height/2, cubes[i].centre.Z - cubes[i].depth/2 );
-                cubeVertices[i+33] = new Vector3(cubes[i].centre.X + cubes[i].width/2, cubes[i].centre.Y - cubes[i].height/2, cubes[i].centre.Z - cubes[i].depth/2 );
-                cubeVertices[i+34] = new Vector3(cubes[i].centre.X - cubes[i].width/2, cubes[i].centre.Y + cubes[i].height/2, cubes[i].centre.Z - cubes[i].depth/2 );
-                cubeVertices[i+35] = new Vector3(cubes[i].centre.X - cubes[i].width/2, cubes[i].centre.Y - cubes[i].height/2, cubes[i].centre.Z - cubes[i].depth/2 );
+                cubeVertices[36*i+30] = new Vector3(cubes[i].centre.X + cubes[i].width/2, cubes[i].centre.Y + cubes[i].height/2, cubes[i].centre.Z - cubes[i].depth/2 );
+                cubeVertices[36*i+31] = new Vector3(cubes[i].centre.X + cubes[i].width/2, cubes[i].centre.Y - cubes[i].height/2, cubes[i].centre.Z - cubes[i].depth/2 );
+                cubeVertices[36*i+32] = new Vector3(cubes[i].centre.X - cubes[i].width/2, cubes[i].centre.Y + cubes[i].height/2, cubes[i].centre.Z - cubes[i].depth/2 );
+                cubeVertices[36*i+33] = new Vector3(cubes[i].centre.X + cubes[i].width/2, cubes[i].centre.Y - cubes[i].height/2, cubes[i].centre.Z - cubes[i].depth/2 );
+                cubeVertices[36*i+34] = new Vector3(cubes[i].centre.X - cubes[i].width/2, cubes[i].centre.Y + cubes[i].height/2, cubes[i].centre.Z - cubes[i].depth/2 );
+                cubeVertices[36*i+35] = new Vector3(cubes[i].centre.X - cubes[i].width/2, cubes[i].centre.Y - cubes[i].height/2, cubes[i].centre.Z - cubes[i].depth/2 );
 
                 //normals
-                cubeNormals[i] = new Vector3(0, 1, 0);
-                cubeNormals[i+1] = new Vector3(0, 1, 0);
-                cubeNormals[i+2] = new Vector3(0, 1, 0);
-                cubeNormals[i+3] = new Vector3(0, 1, 0);
-                cubeNormals[i+4] = new Vector3(0, 1, 0);
-                cubeNormals[i+5] = new Vector3(0, 1, 0);
+                cubeNormals[36*i] = new Vector3(0, 1, 0);
+                cubeNormals[36*i+1] = new Vector3(0, 1, 0);
+                cubeNormals[36*i+2] = new Vector3(0, 1, 0);
+                cubeNormals[36*i+3] = new Vector3(0, 1, 0);
+                cubeNormals[36*i+4] = new Vector3(0, 1, 0);
+                cubeNormals[36*i+5] = new Vector3(0, 1, 0);
 
-                cubeNormals[i+6] = new Vector3(0, -1, 0);
-                cubeNormals[i+7] = new Vector3(0, -1, 0);
-                cubeNormals[i+8] = new Vector3(0, -1, 0);
-                cubeNormals[i+9] = new Vector3(0, -1, 0);
-                cubeNormals[i+10] = new Vector3(0, -1, 0);
-                cubeNormals[i+11] = new Vector3(0, -1, 0);
+                cubeNormals[36*i+6] = new Vector3(0, -1, 0);
+                cubeNormals[36*i+7] = new Vector3(0, -1, 0);
+                cubeNormals[36*i+8] = new Vector3(0, -1, 0);
+                cubeNormals[36*i+9] = new Vector3(0, -1, 0);
+                cubeNormals[36*i+10] = new Vector3(0, -1, 0);
+                cubeNormals[36*i+11] = new Vector3(0, -1, 0);
 
-                cubeNormals[i+12] = new Vector3(1, 0, 0);
-                cubeNormals[i+13] = new Vector3(1, 0, 0);
-                cubeNormals[i+14] = new Vector3(1, 0, 0);
-                cubeNormals[i+15] = new Vector3(1, 0, 0);
-                cubeNormals[i+16] = new Vector3(1, 0, 0);
-                cubeNormals[i+17] = new Vector3(1, 0, 0);
+                cubeNormals[36*i+12] = new Vector3(1, 0, 0);
+                cubeNormals[36*i+13] = new Vector3(1, 0, 0);
+                cubeNormals[36*i+14] = new Vector3(1, 0, 0);
+                cubeNormals[36*i+15] = new Vector3(1, 0, 0);
+                cubeNormals[36*i+16] = new Vector3(1, 0, 0);
+                cubeNormals[36*i+17] = new Vector3(1, 0, 0);
 
-                cubeNormals[i+18] = new Vector3(-1, 0, 0);
-                cubeNormals[i+19] = new Vector3(-1, 0, 0);
-                cubeNormals[i+20] = new Vector3(-1, 0, 0);
-                cubeNormals[i+21] = new Vector3(-1, 0, 0);
-                cubeNormals[i+22] = new Vector3(-1, 0, 0);
-                cubeNormals[i+23] = new Vector3(-1, 0, 0);
+                cubeNormals[36*i+18] = new Vector3(-1, 0, 0);
+                cubeNormals[36*i+19] = new Vector3(-1, 0, 0);
+                cubeNormals[36*i+20] = new Vector3(-1, 0, 0);
+                cubeNormals[36*i+21] = new Vector3(-1, 0, 0);
+                cubeNormals[36*i+22] = new Vector3(-1, 0, 0);
+                cubeNormals[36*i+23] = new Vector3(-1, 0, 0);
 
-                cubeNormals[i+24] = new Vector3(0, 0, 1);
-                cubeNormals[i+25] = new Vector3(0, 0, 1);
-                cubeNormals[i+26] = new Vector3(0, 0, 1);
-                cubeNormals[i+27] = new Vector3(0, 0, 1);
-                cubeNormals[i+28] = new Vector3(0, 0, 1);
-                cubeNormals[i+29] = new Vector3(0, 0, 1);
+                cubeNormals[36*i+24] = new Vector3(0, 0, 1);
+                cubeNormals[36*i+25] = new Vector3(0, 0, 1);
+                cubeNormals[36*i+26] = new Vector3(0, 0, 1);
+                cubeNormals[36*i+27] = new Vector3(0, 0, 1);
+                cubeNormals[36*i+28] = new Vector3(0, 0, 1);
+                cubeNormals[36*i+29] = new Vector3(0, 0, 1);
 
-                cubeNormals[i+30] = new Vector3(0, 0, -1);
-                cubeNormals[i+31] = new Vector3(0, 0, -1);
-                cubeNormals[i+32] = new Vector3(0, 0, -1);
-                cubeNormals[i+33] = new Vector3(0, 0, -1);
-                cubeNormals[i+34] = new Vector3(0, 0, -1);
-                cubeNormals[i+35] = new Vector3(0, 0, -1);
+                cubeNormals[36*i+30] = new Vector3(0, 0, -1);
+                cubeNormals[36*i+31] = new Vector3(0, 0, -1);
+                cubeNormals[36*i+32] = new Vector3(0, 0, -1);
+                cubeNormals[36*i+33] = new Vector3(0, 0, -1);
+                cubeNormals[36*i+34] = new Vector3(0, 0, -1);
+                cubeNormals[36*i+35] = new Vector3(0, 0, -1);
             }
 
         }
@@ -682,14 +702,14 @@ namespace Template {
         /// Respawns the balls and empties the grid lists
         /// </summary>
         /// <param name="sameSeed"> If set to true, the same seed as previous spawn will be used </param>
-        public static void RestartScene(bool sameSeed) {
+        public static void RestartScene(bool sameSeed, int scene) {
             grid = new Dictionary<int, List<int>>();
             particles = new Sphere[numberOfPoints];
             for (int i = 0; i < voxels * voxels * voxels; i++) {
                 grid.Add(i, new List<int>());
             }
             int count = 0;
-
+            
             int val = 50;
             float step = dim / 50;
 
@@ -701,7 +721,11 @@ namespace Template {
                     {
                         if (count < numberOfPoints)
                         {
-                            particles[count] = new Sphere(count, new Vector3(step * j+0.03f, step * k, step * i), Vector3.Zero, 0.01f);;
+                            if(scene == 1){
+                                particles[count] = new Sphere(count, new Vector3(step * k, 1-step * 3.0f * j - 0.08f, step * i), Vector3.Zero, 0.01f);;
+                            }else{
+                                particles[count] = new Sphere(count, new Vector3(step * 1.5f * j+0.03f, step * k, step * i), Vector3.Zero, 0.01f);;
+                            }
                             particles[count].color = new Vector3(0.5f, 0, 0);
                             particles[count].Mass = 0.3f;
                             particles[count].NetForce = new Vector3(0, 0, 0);

@@ -92,31 +92,31 @@ namespace template.Shapes
             #region wallCollision
 
             // For every wall check if the particle is hitting it and going toward the outside
-            if (Position.X < 0)
+            if (Position.X-Radius < 0)
             {
                 Position = new Vector3(Radius, Position.Y, Position.Z);
-                Velocity = new Vector3(-1 * Velocity.X/damping, Velocity.Y, Velocity.Z);
+                Velocity = new Vector3(-1 * Velocity.X/(2*damping), Velocity.Y, Velocity.Z);
             }
-            if (Position.Y < 0)
+            if (Position.Y - Radius < 0)
             {
                 Position = new Vector3(Position.X, Radius, Position.Z);
                 Velocity = new Vector3(Velocity.X, -1*Velocity.Y/(10*damping), Velocity.Z);
             }
-            if (Position.Z < 0)
+            if (Position.Z - Radius < 0)
             {
                 Position = new Vector3(Position.X, Position.Y, Radius);
                 Velocity = new Vector3(Velocity.X, Velocity.Y, -1*Velocity.Z/damping);
             }
 
-            if (Position.X >= Game.dim) {
+            if (Position.X + Radius >= Game.dim) {
                 Position = new Vector3(Game.dim-0.001f-Radius, Position.Y, Position.Z);
-                Velocity = new Vector3(-1 * Velocity.X/damping, Velocity.Y, Velocity.Z);
+                Velocity = new Vector3(-1 * Velocity.X/(2*damping), Velocity.Y, Velocity.Z);
             }
-            if (Position.Y >= Game.dim) {
+            if (Position.Y + Radius >= Game.dim) {
                 Position = new Vector3(Position.X, Game.dim-0.001f-Radius, Position.Z);
                 Velocity = new Vector3(Velocity.X, -1*Velocity.Y/damping, Velocity.Z);
             }
-            if (Position.Z >= Game.dim) {
+            if (Position.Z + Radius >= Game.dim) {
                 Position = new Vector3(Position.X, Position.Y, Game.dim-0.001f-Radius);
                 Velocity = new Vector3(Velocity.X, Velocity.Y, -1 * Velocity.Z/damping);
             }
@@ -146,8 +146,9 @@ namespace template.Shapes
                         Position -= depth*0.5f*collisionNormal;
                         Game.particles[neighbors[i]].position += depth*0.5f*collisionNormal;
                         //new velocity
-                        Velocity -= (depth * -(1+1f) * Vector3.Dot(Velocity, collisionNormal)*collisionNormal);
-                        Game.particles[neighbors[i]].Velocity += (depth * -(1+1f) * Vector3.Dot(Velocity, collisionNormal)*collisionNormal);
+                        float weight = Velocity.Length / (Velocity.Length + Game.particles[neighbors[i]].Velocity.Length);
+                        Velocity -= (depth * -(1+0.7f) * Vector3.Dot(Velocity, collisionNormal)*collisionNormal);
+                        Game.particles[neighbors[i]].Velocity += (depth * -(1+0.7f) * Vector3.Dot(Velocity, collisionNormal)*collisionNormal);
 
                     }
                 }

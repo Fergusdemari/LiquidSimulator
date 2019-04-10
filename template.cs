@@ -163,8 +163,11 @@ namespace Template
             {
                 if(i < game.boundsVertices.Length + game.vertices.Length)
                 {
-                    colours[i] = new Vector3(0, 0, 1.0f);
-
+                    if(Game.displayMode == Game.Mode.SHAPES){
+                        colours[i] = new Vector3(0, 0, 1.0f);
+                    }else{
+                        colours[i] = new Vector3(1.0f, 1.0f, 1.0f);
+                    }
                 }
                 else
                 {
@@ -222,6 +225,7 @@ namespace Template
             GL.DrawArrays(PrimitiveType.Lines, 0, game.boundsVertices.Length);
             if(Game.displayMode == Game.Mode.PARTICLES){
                 GL.DrawArrays(PrimitiveType.Points, game.boundsVertices.Length, game.vertices.Length);
+                GL.DrawArrays(PrimitiveType.Triangles, game.boundsVertices.Length+game.vertices.Length, game.cubeVertices.Length);
             }else if (Game.displayMode == Game.Mode.SHAPES){
                 GL.DrawArrays(PrimitiveType.Triangles, game.boundsVertices.Length, game.vertices.Length);
                 GL.DrawArrays(PrimitiveType.Triangles, game.boundsVertices.Length+game.vertices.Length, game.cubeVertices.Length);
@@ -350,7 +354,17 @@ namespace Template
                 SpaceHasBeenReleased = true;
             }
 
+            if (keyboard[OpenTK.Input.Key.Number1])
+            {
+                game.sceneNumber = 0;
+                game.Init();
+            }
 
+            if (keyboard[OpenTK.Input.Key.Number2])
+            {
+                game.sceneNumber = 1;
+                game.Init();
+            }
         
             if (keyboard[OpenTK.Input.Key.Number9])
             {

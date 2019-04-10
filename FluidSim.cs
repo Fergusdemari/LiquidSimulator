@@ -7,15 +7,15 @@ namespace Template {
     public class FluidSim {
         int particleCount;
         //k is a coefficient basically for how dense the fluid is in general. Increasing k will make the particles act as if they represent a larger amount of fluid (box will appear more full)
-        float k = 0.5f;
+        public float k = 0.1f;
         //how much the liquid stays together
-        float viscosity = 5.0f;
+        public float viscosity = 0.5f;
         //a preference pressure value
-        float p0 = 1.0f;
+        public float p0 = 1.0f;
         //radius which is the cutoff for the kernels. Particle is only affected by other particles within this radius
-        float d = 0.05f;
+        public float d = 0.1f;
 
-        float sigma = 20000.0f;
+        public float sigma = 4000.0f;
 
         float timeStep;
 
@@ -54,7 +54,7 @@ namespace Template {
             if (startIndex == -1 && stopIndex == -1)
             {
                 startIndex = 0;
-                stopIndex = Game.particles.Length;
+                stopIndex = Game.currentPoints;
             }
 
             // Updates density and pressure
@@ -78,7 +78,7 @@ namespace Template {
             if (startIndex == -1 && stopIndex == -1)
             {
                 startIndex = 0;
-                stopIndex = Game.particles.Length;
+                stopIndex = Game.currentPoints;
             }
 
             //loop through each particle and find it's density and pressure
@@ -126,7 +126,7 @@ namespace Template {
             if (startIndex == -1 && stopIndex == -1)
             {
                 startIndex = 0;
-                stopIndex = Game.particles.Length;
+                stopIndex = Game.currentPoints;
             }
 
             for (int i = startIndex; i < stopIndex; i++)
@@ -196,7 +196,11 @@ namespace Template {
             {
                 Console.WriteLine("pressure: " + f + "  --  " + p.Density);
             }
-                
+             
+            if(f.Length > 80){
+                f.Normalize();
+                f *= 80;
+            }
             p.NetForce += f;
         }
 
