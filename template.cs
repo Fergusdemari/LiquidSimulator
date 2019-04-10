@@ -14,7 +14,7 @@ namespace Template
     {
         public OpenTKApp()
             : base(640, 480,
-            new GraphicsMode(), "OpenGL 3 Example", 0,
+            new GraphicsMode(), "Fluid Sim", 0,
             DisplayDevice.Default, 3, 0,
             GraphicsContextFlags.ForwardCompatible | GraphicsContextFlags.Debug)
         { }
@@ -158,7 +158,21 @@ namespace Template
             if (Game.Recording) {
                 SaveImage();
             }
+            Vector3[] colours = new Vector3[game.vertexBuffer.Length];
+            for(int i = 0; i < game.vertexBuffer.Length; i++)
+            {
+                if(i < game.boundsVertices.Length + game.vertices.Length)
+                {
+                    colours[i] = new Vector3(0, 0, 1.0f);
 
+                }
+                else
+                {
+                    colours[i] = new Vector3(0.9f,0.9f,0.9f);
+
+                }
+
+            }
             int positionVboHandle = GL.GenBuffer();
             GL.BindBuffer(BufferTarget.ArrayBuffer, positionVboHandle);
             GL.BufferData<Vector3>(BufferTarget.ArrayBuffer,
@@ -171,11 +185,19 @@ namespace Template
                 new IntPtr(game.normalsBuffer.Length * Vector3.SizeInBytes),
                 game.normalsBuffer, BufferUsageHint.StaticDraw);
 
+            int colVboHandle = GL.GenBuffer();
+            GL.BindBuffer(BufferTarget.ArrayBuffer, colVboHandle);
+            GL.BufferData<Vector3>(BufferTarget.ArrayBuffer,
+                new IntPtr(colours.Length * Vector3.SizeInBytes),
+                colours, BufferUsageHint.StaticDraw);
+
             int attribute_vpos = GL.GetAttribLocation( shaderProgramHandle, "in_position" );
             int attribute_norm = GL.GetAttribLocation( shaderProgramHandle, "in_normal" );
+            int attribute_col = GL.GetAttribLocation( shaderProgramHandle, "in_colour" );
 
             GL.GenVertexArrays(2, out vaoHandle2);
             GL.BindVertexArray(vaoHandle2);
+
             GL.EnableVertexAttribArray(attribute_norm);
             GL.BindBuffer(BufferTarget.ArrayBuffer, normVboHandle);
             GL.VertexAttribPointer(attribute_norm, 3, VertexAttribPointerType.Float, true, Vector3.SizeInBytes, 0);
@@ -183,6 +205,10 @@ namespace Template
             GL.EnableVertexAttribArray(attribute_vpos);
             GL.BindBuffer(BufferTarget.ArrayBuffer, positionVboHandle);
             GL.VertexAttribPointer(attribute_vpos, 3, VertexAttribPointerType.Float, true, Vector3.SizeInBytes, 0);
+
+            GL.EnableVertexAttribArray(attribute_col);
+            GL.BindBuffer(BufferTarget.ArrayBuffer, colVboHandle);
+            GL.VertexAttribPointer(attribute_col, 3, VertexAttribPointerType.Float, true, Vector3.SizeInBytes, 0);
 
             GL.Viewport(0, 0, Width, Height);
 
@@ -198,6 +224,8 @@ namespace Template
                 GL.DrawArrays(PrimitiveType.Points, game.boundsVertices.Length, game.vertices.Length);
             }else if (Game.displayMode == Game.Mode.SHAPES){
                 GL.DrawArrays(PrimitiveType.Triangles, game.boundsVertices.Length, game.vertices.Length);
+                GL.DrawArrays(PrimitiveType.Triangles, game.boundsVertices.Length+game.vertices.Length, game.cubeVertices.Length);
+
             }
             SwapBuffers();
 

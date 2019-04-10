@@ -15,7 +15,15 @@ namespace Template {
         public int tickCounter;
         public Vector3 velocity;
     }
-        
+
+    struct Cube
+    {
+        public float height;
+        public float width;
+        public float depth;
+        public Vector3 centre;
+    }
+
     class Game {
         public enum Mode {
             PARTICLES,  //Displays them as points
@@ -40,7 +48,7 @@ namespace Template {
         bool showGrid = false;
         bool showBorders = true;
         // Keep threading false atm, issues with locking
-        private bool threading = false;
+        private bool threading = true;
 
         // Number of voxels in the grid per dimension
         static int voxels = 64;
@@ -53,7 +61,8 @@ namespace Template {
         public static int currentPoints = 0;
 
         public Emitter[] emitters;
-        public static int numberOfPoints = 400;
+        public static Cube[] cubes;
+        public static int numberOfPoints = 300;
 
         public static Sphere[] particles = new Sphere[numberOfPoints];
         public static Dictionary<int, List<int>> grid = new Dictionary<int, List<int>>();
@@ -61,7 +70,8 @@ namespace Template {
         //OPENGL
         public Vector3[] vertices;
         public Vector3[] normals;
-
+        public Vector3[] cubeVertices;
+        public Vector3[] cubeNormals;
         public Vector3[] boundsVertices;
 
         public Vector3[] vertexBuffer;
@@ -94,10 +104,15 @@ namespace Template {
             emitters[0].emissionRate = 5;
             emitters[0].delay = 5;
             emitters[0].tickCounter = 0;
-
-
             RestartScene(true);
 
+
+            cubes = new Cube[1];
+            cubes[0] = new Cube();
+            cubes[0].centre = new Vector3(0.5f, 0.1f, 0);
+            cubes[0].height = 0.2f;
+            cubes[0].depth = 0.05f;
+            cubes[0].width = 0.2f;
             //start fluid simulator
             simulator = new FluidSim(numberOfPoints, dt, particles, voxelSize);
             //int[] t = neighborsIndicesConcatenated();
@@ -192,6 +207,7 @@ namespace Template {
                 drawGrid();
             }
             drawBorders();
+            drawCubes();
             //Different displaymodes
             switch (displayMode) {
                 case Mode.PARTICLES:
@@ -229,12 +245,14 @@ namespace Template {
                     break;
 
             }
-            normalsBuffer = new Vector3[normals.Length + boundsVertices.Length];
+            normalsBuffer = new Vector3[normals.Length + boundsVertices.Length + cubeNormals.Length];
             normals.CopyTo(normalsBuffer, boundsVertices.Length);
+            cubeNormals.CopyTo(normalsBuffer, normals.Length+boundsVertices.Length);
 
-            vertexBuffer = new Vector3[vertices.Length + boundsVertices.Length];
+            vertexBuffer = new Vector3[vertices.Length + boundsVertices.Length + cubeVertices.Length];
             boundsVertices.CopyTo(vertexBuffer, 0);
             vertices.CopyTo(vertexBuffer, boundsVertices.Length);
+            cubeVertices.CopyTo(vertexBuffer, vertices.Length+boundsVertices.Length);
         }
 
         #region Distancefunctions and their overloads
@@ -296,6 +314,100 @@ namespace Template {
                 new Vector3(dim, dim, dim),
                 new Vector3(dim, 0, dim)
             };
+        }
+
+        private void drawCubes()
+        {
+            cubeVertices = new Vector3[36 * cubes.Length];
+            cubeNormals = new Vector3[36 * cubes.Length];
+            for(int i = 0; i < cubes.Length; i++)
+            {
+                cubeVertices[i] = new Vector3(cubes[i].centre.X + cubes[i].width/2, cubes[i].centre.Y + cubes[i].height/2, cubes[i].centre.Z + cubes[i].depth/2 );
+                cubeVertices[i+1] = new Vector3(cubes[i].centre.X + cubes[i].width/2, cubes[i].centre.Y + cubes[i].height/2, cubes[i].centre.Z - cubes[i].depth/2 );
+                cubeVertices[i+2] = new Vector3(cubes[i].centre.X - cubes[i].width/2, cubes[i].centre.Y + cubes[i].height/2, cubes[i].centre.Z + cubes[i].depth/2 );
+                cubeVertices[i+3] = new Vector3(cubes[i].centre.X + cubes[i].width/2, cubes[i].centre.Y + cubes[i].height/2, cubes[i].centre.Z - cubes[i].depth/2 );
+                cubeVertices[i+4] = new Vector3(cubes[i].centre.X - cubes[i].width/2, cubes[i].centre.Y + cubes[i].height/2, cubes[i].centre.Z + cubes[i].depth/2 );
+                cubeVertices[i+5] = new Vector3(cubes[i].centre.X - cubes[i].width/2, cubes[i].centre.Y + cubes[i].height/2, cubes[i].centre.Z - cubes[i].depth/2 );
+
+                cubeVertices[i+6] = new Vector3(cubes[i].centre.X + cubes[i].width/2, cubes[i].centre.Y - cubes[i].height/2, cubes[i].centre.Z + cubes[i].depth/2 );
+                cubeVertices[i+7] = new Vector3(cubes[i].centre.X + cubes[i].width/2, cubes[i].centre.Y - cubes[i].height/2, cubes[i].centre.Z - cubes[i].depth/2 );
+                cubeVertices[i+8] = new Vector3(cubes[i].centre.X - cubes[i].width/2, cubes[i].centre.Y - cubes[i].height/2, cubes[i].centre.Z + cubes[i].depth/2 );
+                cubeVertices[i+9] = new Vector3(cubes[i].centre.X + cubes[i].width/2, cubes[i].centre.Y - cubes[i].height/2, cubes[i].centre.Z - cubes[i].depth/2 );
+                cubeVertices[i+10] = new Vector3(cubes[i].centre.X - cubes[i].width/2, cubes[i].centre.Y - cubes[i].height/2, cubes[i].centre.Z + cubes[i].depth/2 );
+                cubeVertices[i+11] = new Vector3(cubes[i].centre.X - cubes[i].width/2, cubes[i].centre.Y - cubes[i].height/2, cubes[i].centre.Z - cubes[i].depth/2 );
+
+                cubeVertices[i+12] = new Vector3(cubes[i].centre.X + cubes[i].width/2, cubes[i].centre.Y + cubes[i].height/2, cubes[i].centre.Z + cubes[i].depth/2 );
+                cubeVertices[i+13] = new Vector3(cubes[i].centre.X + cubes[i].width/2, cubes[i].centre.Y + cubes[i].height/2, cubes[i].centre.Z - cubes[i].depth/2 );
+                cubeVertices[i+14] = new Vector3(cubes[i].centre.X + cubes[i].width/2, cubes[i].centre.Y - cubes[i].height/2, cubes[i].centre.Z + cubes[i].depth/2 );
+                cubeVertices[i+15] = new Vector3(cubes[i].centre.X + cubes[i].width/2, cubes[i].centre.Y + cubes[i].height/2, cubes[i].centre.Z - cubes[i].depth/2 );
+                cubeVertices[i+16] = new Vector3(cubes[i].centre.X + cubes[i].width/2, cubes[i].centre.Y - cubes[i].height/2, cubes[i].centre.Z + cubes[i].depth/2 );
+                cubeVertices[i+17] = new Vector3(cubes[i].centre.X + cubes[i].width/2, cubes[i].centre.Y - cubes[i].height/2, cubes[i].centre.Z - cubes[i].depth/2 );
+
+                cubeVertices[i+18] = new Vector3(cubes[i].centre.X - cubes[i].width/2, cubes[i].centre.Y + cubes[i].height/2, cubes[i].centre.Z + cubes[i].depth/2 );
+                cubeVertices[i+19] = new Vector3(cubes[i].centre.X - cubes[i].width/2, cubes[i].centre.Y + cubes[i].height/2, cubes[i].centre.Z - cubes[i].depth/2 );
+                cubeVertices[i+20] = new Vector3(cubes[i].centre.X - cubes[i].width/2, cubes[i].centre.Y - cubes[i].height/2, cubes[i].centre.Z + cubes[i].depth/2 );
+                cubeVertices[i+21] = new Vector3(cubes[i].centre.X - cubes[i].width/2, cubes[i].centre.Y + cubes[i].height/2, cubes[i].centre.Z - cubes[i].depth/2 );
+                cubeVertices[i+22] = new Vector3(cubes[i].centre.X - cubes[i].width/2, cubes[i].centre.Y - cubes[i].height/2, cubes[i].centre.Z + cubes[i].depth/2 );
+                cubeVertices[i+23] = new Vector3(cubes[i].centre.X - cubes[i].width/2, cubes[i].centre.Y - cubes[i].height/2, cubes[i].centre.Z - cubes[i].depth/2 );
+
+                cubeVertices[i+24] = new Vector3(cubes[i].centre.X + cubes[i].width/2, cubes[i].centre.Y + cubes[i].height/2, cubes[i].centre.Z + cubes[i].depth/2 );
+                cubeVertices[i+25] = new Vector3(cubes[i].centre.X + cubes[i].width/2, cubes[i].centre.Y - cubes[i].height/2, cubes[i].centre.Z + cubes[i].depth/2 );
+                cubeVertices[i+26] = new Vector3(cubes[i].centre.X - cubes[i].width/2, cubes[i].centre.Y + cubes[i].height/2, cubes[i].centre.Z + cubes[i].depth/2 );
+                cubeVertices[i+27] = new Vector3(cubes[i].centre.X + cubes[i].width/2, cubes[i].centre.Y - cubes[i].height/2, cubes[i].centre.Z + cubes[i].depth/2 );
+                cubeVertices[i+28] = new Vector3(cubes[i].centre.X - cubes[i].width/2, cubes[i].centre.Y + cubes[i].height/2, cubes[i].centre.Z + cubes[i].depth/2 );
+                cubeVertices[i+29] = new Vector3(cubes[i].centre.X - cubes[i].width/2, cubes[i].centre.Y - cubes[i].height/2, cubes[i].centre.Z + cubes[i].depth/2 );
+
+                cubeVertices[i+30] = new Vector3(cubes[i].centre.X + cubes[i].width/2, cubes[i].centre.Y + cubes[i].height/2, cubes[i].centre.Z - cubes[i].depth/2 );
+                cubeVertices[i+31] = new Vector3(cubes[i].centre.X + cubes[i].width/2, cubes[i].centre.Y - cubes[i].height/2, cubes[i].centre.Z - cubes[i].depth/2 );
+                cubeVertices[i+32] = new Vector3(cubes[i].centre.X - cubes[i].width/2, cubes[i].centre.Y + cubes[i].height/2, cubes[i].centre.Z - cubes[i].depth/2 );
+                cubeVertices[i+33] = new Vector3(cubes[i].centre.X + cubes[i].width/2, cubes[i].centre.Y - cubes[i].height/2, cubes[i].centre.Z - cubes[i].depth/2 );
+                cubeVertices[i+34] = new Vector3(cubes[i].centre.X - cubes[i].width/2, cubes[i].centre.Y + cubes[i].height/2, cubes[i].centre.Z - cubes[i].depth/2 );
+                cubeVertices[i+35] = new Vector3(cubes[i].centre.X - cubes[i].width/2, cubes[i].centre.Y - cubes[i].height/2, cubes[i].centre.Z - cubes[i].depth/2 );
+
+                //normals
+                cubeNormals[i] = new Vector3(0, 1, 0);
+                cubeNormals[i+1] = new Vector3(0, 1, 0);
+                cubeNormals[i+2] = new Vector3(0, 1, 0);
+                cubeNormals[i+3] = new Vector3(0, 1, 0);
+                cubeNormals[i+4] = new Vector3(0, 1, 0);
+                cubeNormals[i+5] = new Vector3(0, 1, 0);
+
+                cubeNormals[i+6] = new Vector3(0, -1, 0);
+                cubeNormals[i+7] = new Vector3(0, -1, 0);
+                cubeNormals[i+8] = new Vector3(0, -1, 0);
+                cubeNormals[i+9] = new Vector3(0, -1, 0);
+                cubeNormals[i+10] = new Vector3(0, -1, 0);
+                cubeNormals[i+11] = new Vector3(0, -1, 0);
+
+                cubeNormals[i+12] = new Vector3(1, 0, 0);
+                cubeNormals[i+13] = new Vector3(1, 0, 0);
+                cubeNormals[i+14] = new Vector3(1, 0, 0);
+                cubeNormals[i+15] = new Vector3(1, 0, 0);
+                cubeNormals[i+16] = new Vector3(1, 0, 0);
+                cubeNormals[i+17] = new Vector3(1, 0, 0);
+
+                cubeNormals[i+18] = new Vector3(-1, 0, 0);
+                cubeNormals[i+19] = new Vector3(-1, 0, 0);
+                cubeNormals[i+20] = new Vector3(-1, 0, 0);
+                cubeNormals[i+21] = new Vector3(-1, 0, 0);
+                cubeNormals[i+22] = new Vector3(-1, 0, 0);
+                cubeNormals[i+23] = new Vector3(-1, 0, 0);
+
+                cubeNormals[i+24] = new Vector3(0, 0, 1);
+                cubeNormals[i+25] = new Vector3(0, 0, 1);
+                cubeNormals[i+26] = new Vector3(0, 0, 1);
+                cubeNormals[i+27] = new Vector3(0, 0, 1);
+                cubeNormals[i+28] = new Vector3(0, 0, 1);
+                cubeNormals[i+29] = new Vector3(0, 0, 1);
+
+                cubeNormals[i+30] = new Vector3(0, 0, -1);
+                cubeNormals[i+31] = new Vector3(0, 0, -1);
+                cubeNormals[i+32] = new Vector3(0, 0, -1);
+                cubeNormals[i+33] = new Vector3(0, 0, -1);
+                cubeNormals[i+34] = new Vector3(0, 0, -1);
+                cubeNormals[i+35] = new Vector3(0, 0, -1);
+            }
+
         }
 
 
@@ -589,7 +701,7 @@ namespace Template {
                     {
                         if (count < numberOfPoints)
                         {
-                            particles[count] = new Sphere(count, new Vector3( step * j, step * k, step * i), Vector3.Zero, 0.001f);;
+                            particles[count] = new Sphere(count, new Vector3(step * j+0.03f, step * k, step * i), Vector3.Zero, 0.01f);;
                             particles[count].color = new Vector3(0.5f, 0, 0);
                             particles[count].Mass = 0.3f;
                             particles[count].NetForce = new Vector3(0, 0, 0);

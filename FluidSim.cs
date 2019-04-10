@@ -9,13 +9,13 @@ namespace Template {
         //k is a coefficient basically for how dense the fluid is in general. Increasing k will make the particles act as if they represent a larger amount of fluid (box will appear more full)
         float k = 0.5f;
         //how much the liquid stays together
-        float viscosity = 10.0f;
+        float viscosity = 5.0f;
         //a preference pressure value
         float p0 = 1.0f;
         //radius which is the cutoff for the kernels. Particle is only affected by other particles within this radius
         float d = 0.05f;
 
-        float sigma = 10000.0f;
+        float sigma = 20000.0f;
 
         float timeStep;
 

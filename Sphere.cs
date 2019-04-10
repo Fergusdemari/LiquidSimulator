@@ -94,31 +94,37 @@ namespace template.Shapes
             // For every wall check if the particle is hitting it and going toward the outside
             if (Position.X < 0)
             {
-                Position = new Vector3(0, Position.Y, Position.Z);
+                Position = new Vector3(Radius, Position.Y, Position.Z);
                 Velocity = new Vector3(-1 * Velocity.X/damping, Velocity.Y, Velocity.Z);
             }
             if (Position.Y < 0)
             {
-                Position = new Vector3(Position.X, 0, Position.Z);
-                Velocity = new Vector3(Velocity.X, -1*Velocity.Y/(1000*damping), Velocity.Z);
+                Position = new Vector3(Position.X, Radius, Position.Z);
+                Velocity = new Vector3(Velocity.X, -1*Velocity.Y/(10*damping), Velocity.Z);
             }
             if (Position.Z < 0)
             {
-                Position = new Vector3(Position.X, Position.Y, 0);
+                Position = new Vector3(Position.X, Position.Y, Radius);
                 Velocity = new Vector3(Velocity.X, Velocity.Y, -1*Velocity.Z/damping);
             }
 
             if (Position.X >= Game.dim) {
-                Position = new Vector3(Game.dim-0.001f, Position.Y, Position.Z);
+                Position = new Vector3(Game.dim-0.001f-Radius, Position.Y, Position.Z);
                 Velocity = new Vector3(-1 * Velocity.X/damping, Velocity.Y, Velocity.Z);
             }
             if (Position.Y >= Game.dim) {
-                Position = new Vector3(Position.X, Game.dim-0.001f, Position.Z);
+                Position = new Vector3(Position.X, Game.dim-0.001f-Radius, Position.Z);
                 Velocity = new Vector3(Velocity.X, -1*Velocity.Y/damping, Velocity.Z);
             }
             if (Position.Z >= Game.dim) {
-                Position = new Vector3(Position.X, Position.Y, Game.dim-0.001f);
+                Position = new Vector3(Position.X, Position.Y, Game.dim-0.001f-Radius);
                 Velocity = new Vector3(Velocity.X, Velocity.Y, -1 * Velocity.Z/damping);
+            }
+
+            for(int i = 0; i < Game.cubes.Length; i++)
+            {
+                collideCube(Game.cubes[i]);
+
             }
 
             int[] neighbors = Game.neighborsIndicesConcatenated(Position);
@@ -147,6 +153,51 @@ namespace template.Shapes
                 }
             }
             #endregion
+        }
+
+        private void collideCube(Cube cube)
+        {
+            float xDepth;
+            if(position.X < cube.centre.X){
+                xDepth = (cube.centre.X-cube.width/2) - (position.X+Radius);
+            }else{
+                xDepth = (position.X-Radius) - (cube.centre.X+cube.width/2);
+            }
+            float yDepth;
+            if(position.Y < cube.centre.Y){
+                yDepth = (cube.centre.Y-cube.height/2) - (position.Y+Radius);
+            }else{
+                yDepth = (position.Y-Radius) - (cube.centre.Y+cube.height/2);
+            }
+            float zDepth;;
+            if(position.Z < cube.centre.Z){
+                zDepth = (cube.centre.Z - cube.depth/2) - (position.Z+Radius);
+            }else{
+                zDepth = (position.Z-Radius) - (cube.centre.Z + cube.depth/2);
+            }
+
+            if(xDepth < 0 && yDepth < 0 && zDepth < 0)
+            {
+                Vector3 contactNormal;
+                float depth;
+                if((float)Math.Abs(xDepth) <= (float)Math.Abs(yDepth) && (float)Math.Abs(xDepth) <= (float)Math.Abs(zDepth)){
+                    contactNormal = new Vector3(1, 0, 0) * (Position.X - cube.centre.X);
+                    depth = (float)Math.Abs(xDepth);
+                    Velocity.X *= -1/damping;
+                }else if((float)Math.Abs(yDepth) <= (float)Math.Abs(xDepth) && (float)Math.Abs(yDepth) <= (float)Math.Abs(zDepth)){
+                    contactNormal = new Vector3(0, 1, 0) * (Position.Y - cube.centre.Y);
+                    depth = (float)Math.Abs(yDepth);
+                    Velocity.Y *= -1/(10*damping);
+                }else{
+                    contactNormal = new Vector3(0, 0, 1) * (Position.Z - cube.centre.Z);
+                    depth = (float)Math.Abs(zDepth);
+                    Velocity.Z *= -1/damping;
+                }
+                contactNormal.Normalize();
+
+                Position += ((depth)*contactNormal);
+
+            }
         }
 
         /// <summary>
