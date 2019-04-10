@@ -39,7 +39,7 @@ namespace Template
 
         public static Mode displayMode = Mode.SHAPES;
         public int sceneNumber = 1;
-        public static bool Recording = true;
+        public static bool Recording = false;
         public bool running = false;
         public bool step = false;
         // Currently it's all done within 0-1. If you want it to be 0-3, set dim to 3 (In case of rounding errors maybe?)
@@ -48,7 +48,7 @@ namespace Template
         // divided by 1000 because idk
         public static float gravity = -9.81f;
         // Stepsize of each frame. Set to very tiny if you want it to look silky smooth
-        public float dt = 1.0f / 60f;
+        public float dt = 1.0f / 25f;
         public float Radius = 0.01f;
         //Debug showing
         bool showGrid = false;
@@ -62,7 +62,7 @@ namespace Template
         // Size of one voxele
         static float visVoxelSize = dim / visualisationVoxels;
         static float voxelSize = dim / voxels;
- 
+
         public static int currentPoints = 0;
 
         public Emitter[] emitters;
@@ -97,9 +97,7 @@ namespace Template
             // Just some seed code to keep the same seed during the same run
             Random seedCreator = new Random();
             RNGSeed = seedCreator.Next(int.MaxValue);
-            Console.WriteLine("Current RNG Seed is " + RNGSeed);
-
-            printInstructions();
+            //Console.WriteLine("Current RNG Seed is " + RNGSeed);
             //Creates random points with random velocities
             grid = new Dictionary<int, List<int>>();
             for (int i = 0; i < voxels * voxels * voxels; i++)
@@ -130,6 +128,7 @@ namespace Template
             }
             else if (scene == 1)
             {
+                gravity = -0.981f;
                 cubes = new Cube[2];
                 cubes[0] = new Cube();
                 cubes[0].centre = new Vector3(0.4f, 0.5f, 0);
@@ -147,7 +146,7 @@ namespace Template
             }
             else if (scene == 2)
             {
-                simulator.viscosity = 0.3f;
+                simulator.viscosity = 0.1f;
                 simulator.p0 = 1.0f;
                 simulator.d = 0.23f;
                 simulator.sigma = 4000.0f;
@@ -173,7 +172,65 @@ namespace Template
 
                 RestartScene(true, scene);
             }
+            else if (scene == 3)
+            {
+                simulator.viscosity = 0.01f;
+                simulator.p0 = 1.0f;
+                simulator.d = 0.23f;
+                simulator.sigma = 3000.0f;
+                gravity = -20;
+                cubes = new Cube[5];
 
+                cubes[0] = new Cube();
+                cubes[0].centre = new Vector3(0.4f, 0.85f, 0.5f);
+                cubes[0].height = 0.02f;
+                cubes[0].depth = 1f;
+                cubes[0].width = 0.8f;
+
+                cubes[1] = new Cube();
+                cubes[1].centre = new Vector3(0.6f, 0.7f, 0.5f);
+                cubes[1].height = 0.02f;
+                cubes[1].depth = 1f;
+                cubes[1].width = 0.8f;
+
+                cubes[2] = new Cube();
+                cubes[2].centre = new Vector3(0.4f, 0.55f, 0.5f);
+                cubes[2].height = 0.02f;
+                cubes[2].depth = 1f;
+                cubes[2].width = 0.8f;
+
+                cubes[3] = new Cube();
+                cubes[3].centre = new Vector3(0.5f, 0.925f, 0.25f);
+                cubes[3].width = 0.02f;
+                cubes[3].height = 0.15f;
+                cubes[3].depth = 0.2f;
+
+                cubes[4] = new Cube();
+                cubes[4].centre = new Vector3(0.5f, 0.925f, 0.75f);
+                cubes[4].width = 0.02f;
+                cubes[4].height = 0.15f;
+                cubes[4].depth = 0.2f;
+
+
+                RestartScene(true, scene);
+            } else if (scene == 4){
+                simulator.viscosity = 0.01f;
+                simulator.p0 = 1.0f;
+                simulator.d = 0.23f;
+                simulator.sigma = 3000.0f;
+                gravity = -20;
+                cubes = new Cube[3];
+
+                cubes[0] = new Cube();
+                cubes[0].centre = new Vector3(0.2f, 0.3f, 0.5f);
+                cubes[0].height = 0.6f;
+                cubes[0].depth = 1f;
+                cubes[0].width = 0.05f;
+
+
+
+                RestartScene(true, scene);
+            }
         }
 
         /// <summary>
@@ -843,13 +900,15 @@ namespace Template
         /// <summary>
         /// Prints instructions at the start
         /// </summary>
-        private void printInstructions()
+        public static void printInstructions()
         {
-            Console.WriteLine("[R]         - Reset the Camera");
-            Console.WriteLine("[1]         - Respawn the particles with the same seed as last time");
-            Console.WriteLine("[2]         - Respawn the particles with a new seed");
+            Console.WriteLine();
+            Console.WriteLine("[1-4]       - Load different scenes");
+            Console.WriteLine("[P]         - Remove barrier in scene 2 and 4");
             Console.WriteLine("[WASD]      - Walk around");
+            Console.WriteLine("[QE]        - Down and Up");
             Console.WriteLine("[Arrowkeys] - Look around");
+            Console.WriteLine("[Spacebar]  - Start-Stop simulation");
 
         }
 
@@ -869,20 +928,56 @@ namespace Template
 
             int val = 50;
             float step = dim / 50;
-            if (scene == 2)
+            if (scene > 1 && scene < 5)
             {
-                numberOfPoints = 1000;
+                float minX;
+                float minY;
+                float minZ;
+                float maxX;
+                float maxY;
+                float maxZ;
+                float stepSize = 0.02f;
+                if (scene == 3)
+                {
+                    minX = 0f;
+                    minY = 0.9f;
+                    minZ = 0f;
+                    maxX = 0.98f;
+                    maxY = 0.98f;
+                    maxZ = 0.98f;
+                }
+                else if (scene == 2)
+                {
+                    minX = 0f;
+                    minY = 0.53f;
+                    minZ = 0.79f;
+                    maxX = 0.25f;
+                    maxY = 1f;
+                    maxZ = 0.98f;
+                }
+                else 
+                {
+                    stepSize = 0.03f;
+                    minX = 0f;
+                    minY = 0f;
+                    minZ = 0f;
+                    maxX = 0.15f;
+                    maxY = 0.3f;
+                    maxZ = 0.98f;
+                }
+
+                numberOfPoints = 2000;
                 particles = new Sphere[numberOfPoints];
                 grid = new Dictionary<int, List<int>>();
                 for (int i = 0; i < voxels * voxels * voxels; i++)
                 {
                     grid.Add(i, new List<int>());
                 }
-                for (float x = 0; x < 0.25f; x += 0.02f)
+                for (float x = minX; x < maxX; x += stepSize)
                 {
-                    for (float y = 0.53f; y < 1f; y += 0.02f)
+                    for (float y = minY; y < maxY; y += stepSize)
                     {
-                        for (float z = 0.79f; z < 0.98f; z += 0.02f)
+                        for (float z = minZ; z < maxZ; z += stepSize)
                         {
                             if (count < numberOfPoints)
                             {

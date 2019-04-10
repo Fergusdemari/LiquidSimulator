@@ -129,6 +129,7 @@ namespace Template
             Sprite.target = game.screen;
             screenID = game.screen.GenTexture();
             game.Init();
+            Game.printInstructions();
         }
         protected override void OnUnload(EventArgs e)
         {
@@ -168,6 +169,10 @@ namespace Template
                         if (game.sceneNumber == 2)
                         {
                             colours[i] = new Vector3(MathHelper.Clamp(game.vertexBuffer[i].Y * 4, 0, 1), MathHelper.Clamp(game.vertexBuffer[i].Y * 4, 0, 1), 1.0f);
+                        }
+                        else if (game.sceneNumber == 4)
+                        {
+                            colours[i] = new Vector3(MathHelper.Clamp(game.vertexBuffer[i].Y * 6, 0, 1), MathHelper.Clamp(game.vertexBuffer[i].Y * 6, 0, 1), 1.0f);
                         }
                         else
                         {
@@ -289,6 +294,20 @@ namespace Template
                 angle += rotationSpeed;
                 projectionMatrix = rot* projectionMatrix;
             }
+            if (keyboard[OpenTK.Input.Key.Up])
+            {
+                Matrix4 rot = Matrix4.CreateRotationX(-rotationSpeed);
+                angle -= rotationSpeed;
+                projectionMatrix = rot * projectionMatrix;
+            }
+            if (keyboard[OpenTK.Input.Key.Down])
+            {
+                Matrix4 rot = Matrix4.CreateRotationX(+rotationSpeed);
+                angle += rotationSpeed;
+                projectionMatrix = rot * projectionMatrix;
+            }
+
+
             if (keyboard[OpenTK.Input.Key.R])
             {
                 ResetCamera();
@@ -340,11 +359,6 @@ namespace Template
                 position.Y += translationSpeed;
             }
 
-            if (keyboard[OpenTK.Input.Key.L])
-            {
-                game.step = true;
-            }
-
             if (keyboard[OpenTK.Input.Key.Space])
             {
                 if (SpaceHasBeenReleased)
@@ -365,23 +379,33 @@ namespace Template
                 SpaceHasBeenReleased = true;
             }
 
-            if (keyboard[OpenTK.Input.Key.Number1])
-            {
-                game.sceneNumber = 0;
-                game.Init();
-            }
+            //if (keyboard[OpenTK.Input.Key.Number1])
+            //{
+            //    game.sceneNumber = 0;
+            //    game.Init();
+            //}
 
-            if (keyboard[OpenTK.Input.Key.Number2])
+            if (keyboard[OpenTK.Input.Key.Number1])
             {
                 game.sceneNumber = 1;
                 game.Init();
             }
-            if (keyboard[OpenTK.Input.Key.Number3])
+            if (keyboard[OpenTK.Input.Key.Number2])
             {
                 game.sceneNumber = 2;
                 game.Init();
             }
-            if (keyboard[OpenTK.Input.Key.P] && game.sceneNumber == 2)
+            if (keyboard[OpenTK.Input.Key.Number3])
+            {
+                game.sceneNumber = 3;
+                game.Init();
+            }
+            if (keyboard[OpenTK.Input.Key.Number4])
+            {
+                game.sceneNumber = 4;
+                game.Init();
+            }
+            if (keyboard[OpenTK.Input.Key.P] && (game.sceneNumber == 2 || game.sceneNumber == 4))
             {
                 Game.cubes[0] = new Cube();
             }

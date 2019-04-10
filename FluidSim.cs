@@ -31,7 +31,6 @@ namespace Template {
             timeStep = timeStep_;
             //d = _d*20.0f;
             d=0.2f;
-            Console.WriteLine(d);
 
             Vector3 v1 = new Vector3(d, 0, 0);
             Vector3 v2 = v1;
