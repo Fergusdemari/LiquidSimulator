@@ -170,7 +170,7 @@ namespace template.Shapes
             }else{
                 yDepth = (position.Y-Radius) - (cube.centre.Y+cube.height/2);
             }
-            float zDepth;;
+            float zDepth;
             if(position.Z < cube.centre.Z){
                 zDepth = (cube.centre.Z - cube.depth/2) - (position.Z+Radius);
             }else{

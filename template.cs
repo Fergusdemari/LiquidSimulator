@@ -24,7 +24,7 @@ namespace Template
         public static Matrix4 Camera;
         public static Vector3 ViewDirectionOriginal;
         public static Vector3 UpDirectionOriginal;
-
+        public static Texture2D[] skybox;
 
         int vertexShaderHandle,
             fragmentShaderHandle,
@@ -164,7 +164,15 @@ namespace Template
                 if(i < game.boundsVertices.Length + game.vertices.Length)
                 {
                     if(Game.displayMode == Game.Mode.SHAPES){
-                        colours[i] = new Vector3(0, 0, 1.0f);
+                        if (game.sceneNumber == 2)
+                        {
+                            colours[i] = new Vector3(MathHelper.Clamp(game.vertexBuffer[i].Y * 4, 0, 1), MathHelper.Clamp(game.vertexBuffer[i].Y * 4, 0, 1), 1.0f);
+                        }
+                        else
+                        {
+                            colours[i] = new Vector3(0, 0, 1.0f);
+                        }
+                       
                     }else{
                         colours[i] = new Vector3(1.0f, 1.0f, 1.0f);
                     }
@@ -221,6 +229,9 @@ namespace Template
 
             GL.UniformMatrix4(projectionMatrixLocation, false, ref projectionMatrix);
             GL.UniformMatrix4(modelviewMatrixLocation, false, ref modelviewMatrix);
+            
+
+
 
             GL.DrawArrays(PrimitiveType.Lines, 0, game.boundsVertices.Length);
             if(Game.displayMode == Game.Mode.PARTICLES){
@@ -252,6 +263,8 @@ namespace Template
 
         public static void Main(string[] args)
         {
+            GL.Enable(EnableCap.Texture2D);
+            skybox = LoadSkybox("Skybox (2)/");
             // entry point -> Framerate stuff set?
             using (OpenTKApp app = new OpenTKApp()) { app.Run(60.0, 60.0); }
         }
@@ -365,7 +378,16 @@ namespace Template
                 game.sceneNumber = 1;
                 game.Init();
             }
-        
+            if (keyboard[OpenTK.Input.Key.Number3])
+            {
+                game.sceneNumber = 2;
+                game.Init();
+            }
+            if (keyboard[OpenTK.Input.Key.P] && game.sceneNumber == 2)
+            {
+                Game.cubes[0] = new Cube();
+            }
+
             if (keyboard[OpenTK.Input.Key.Number9])
             {
                 Game.displayMode = Game.Mode.PARTICLES;
@@ -404,6 +426,31 @@ namespace Template
                                           0, 1, 0, 0,
                                           0, 0, 1, 0,
                                           0, 0, 0, 1));
+        }
+
+        public static Texture2D[] LoadSkybox(string filePath)
+        {
+            string[] fileNames = { "negx.jpg", "negy.jpg", "negz.jpg", "posx.jpg", "posy.jpg", "posz.jpg", };
+            int[] ids = new int[6];
+            Texture2D[] results = new Texture2D[6];
+            for (int i = 0; i < 6; i++)
+            {
+                Bitmap bitmap = new Bitmap(filePath + fileNames[i]);
+                int id = GL.GenTexture();
+                BitmapData bmpData = bitmap.LockBits(new Rectangle(0, 0, bitmap.Width, bitmap.Height), ImageLockMode.ReadOnly, System.Drawing.Imaging.PixelFormat.Format32bppArgb);
+                GL.BindTexture(TextureTarget.Texture2D, ids[i]);
+
+                GL.TexImage2D(TextureTarget.Texture2D, 0, PixelInternalFormat.Rgba, bitmap.Width, bitmap.Height, 0,
+                    OpenTK.Graphics.OpenGL.PixelFormat.Bgra, PixelType.UnsignedByte, bmpData.Scan0);
+                bitmap.UnlockBits(bmpData);
+                GL.TexParameter(TextureTarget.Texture2D,
+                    TextureParameterName.TextureMinFilter, (int)TextureMinFilter.Linear);
+                GL.TexParameter(TextureTarget.Texture2D,
+                    TextureParameterName.TextureMagFilter, (int)TextureMinFilter.Linear);
+                results[i] = new Texture2D(ids[i], bitmap.Width, bitmap.Height);
+                ids[i] = id;
+            }
+            return results;
         }
     }
 }
