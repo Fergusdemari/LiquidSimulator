@@ -115,7 +115,6 @@ namespace Template
             VSync = VSyncMode.On;
 
             CreateShaders();
-            skybox = LoadSkybox("Skybox (2)/");
             // Other state
             GL.Enable(EnableCap.DepthTest);
             GL.ClearColor(System.Drawing.Color.Black);
@@ -226,8 +225,7 @@ namespace Template
             GL.Viewport(0, 0, Width, Height);
 
             GL.Clear(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit);
-
-            RenderSkyBox();
+            
 
             GL.BindVertexArray(vaoHandle2);
 
@@ -247,66 +245,6 @@ namespace Template
 
         }
 
-        private void RenderSkyBox()
-        {
-            GL.Enable(EnableCap.Texture2D);
-            GL.Color4(1f, 1f, 1f, 1f);
-
-            GL.BindTexture(TextureTarget.Texture2D, skybox[0].Id);
-            GL.Begin(PrimitiveType.Quads);
-            GL.TexCoord2(0, 0); GL.Vertex3(3f, -3f, -3f);
-            GL.TexCoord2(1, 0); GL.Vertex3(-3f, -3f, -3f);
-            GL.TexCoord2(1, 1); GL.Vertex3(-3f, 3f, -3f);
-            GL.TexCoord2(0, 1); GL.Vertex3(3f, 3f, -3f);
-            GL.End();
-
-
-            GL.BindTexture(TextureTarget.Texture2D, skybox[1].Id);
-            GL.Begin(PrimitiveType.Quads);
-            GL.TexCoord2(0, 0); GL.Vertex3(3f, -3f, 3f);
-            GL.TexCoord2(1, 0); GL.Vertex3(3f, -3f, -3f);
-            GL.TexCoord2(1, 1); GL.Vertex3(3f, 3f, -3f);
-            GL.TexCoord2(0, 1); GL.Vertex3(3f, 3f, 3f);
-            GL.End();
-
-
-            GL.BindTexture(TextureTarget.Texture2D, skybox[2].Id);
-            GL.Begin(PrimitiveType.Quads);
-            GL.TexCoord2(0, 0); GL.Vertex3(-3f, -3f, 3f);
-            GL.TexCoord2(1, 0); GL.Vertex3(3f, -3f, 3f);
-            GL.TexCoord2(1, 1); GL.Vertex3(3f, 3f, 3f);
-            GL.TexCoord2(0, 1); GL.Vertex3(-3f, 3f, 3f);
-            GL.End();
-
-
-            GL.BindTexture(TextureTarget.Texture2D, skybox[3].Id);
-            GL.Begin(PrimitiveType.Quads);
-            GL.TexCoord2(0, 0); GL.Vertex3(-3f, -3f, -3f);
-            GL.TexCoord2(1, 0); GL.Vertex3(-3f, -3f, 3f);
-            GL.TexCoord2(1, 1); GL.Vertex3(-3f, 3f, 3f);
-            GL.TexCoord2(0, 1); GL.Vertex3(-3f, 3f, -3f);
-            GL.End();
-
-
-            GL.BindTexture(TextureTarget.Texture2D, skybox[4].Id);
-            GL.Begin(PrimitiveType.Quads);
-            GL.TexCoord2(0, 0); GL.Vertex3(-3f, 3f, -3f);
-            GL.TexCoord2(1, 0); GL.Vertex3(-3f, 3f, 3f);
-            GL.TexCoord2(1, 1); GL.Vertex3(3f, 3f, 3f);
-            GL.TexCoord2(0, 1); GL.Vertex3(3f, 3f, -3f);
-            GL.End();
-
-
-            GL.BindTexture(TextureTarget.Texture2D, skybox[5].Id);
-            GL.Begin(PrimitiveType.Quads);
-            GL.TexCoord2(0, 0); GL.Vertex3(-3f, -3f, -3f);
-            GL.TexCoord2(1, 0); GL.Vertex3(-3f, -3f, 3f);
-            GL.TexCoord2(1, 1); GL.Vertex3(3f, -3f, 3f);
-            GL.TexCoord2(0, 1); GL.Vertex3(3f, -3f, -3f);
-            GL.End();
-
-            GL.Disable(EnableCap.Texture2D);
-        }
 
         private void SaveImage()
         {
@@ -486,30 +424,6 @@ namespace Template
                                           0, 1, 0, 0,
                                           0, 0, 1, 0,
                                           0, 0, 0, 1));
-        }
-
-        public static Texture2D[] LoadSkybox(string filePath)
-        {
-            GL.Color3(1f, 1f, 1f);
-            string[] fileNames = { "penguin.png", "negy.jpg", "negz.jpg", "posx.jpg", "posy.jpg", "posz.jpg"};
-            Texture2D[] results = new Texture2D[6];
-            for (int i = 0; i < 6; i++)
-            {
-                Bitmap bitmap = new Bitmap(filePath + fileNames[i]);
-                int id = GL.GenTexture();
-                BitmapData bmpData = bitmap.LockBits(new Rectangle(0, 0, bitmap.Width, bitmap.Height), ImageLockMode.ReadOnly, System.Drawing.Imaging.PixelFormat.Format32bppArgb);
-                GL.BindTexture(TextureTarget.Texture2D, id);
-
-                GL.TexImage2D(TextureTarget.Texture2D, 0, PixelInternalFormat.Rgba, bitmap.Width, bitmap.Height, 0,
-                    OpenTK.Graphics.OpenGL.PixelFormat.Bgra, PixelType.UnsignedByte, bmpData.Scan0);
-                bitmap.UnlockBits(bmpData);
-                GL.TexParameter(TextureTarget.Texture2D,
-                    TextureParameterName.TextureMinFilter, (int)TextureMinFilter.Linear);
-                GL.TexParameter(TextureTarget.Texture2D,
-                    TextureParameterName.TextureMagFilter, (int)TextureMinFilter.Linear);
-                results[i] = new Texture2D(id, bitmap.Width, bitmap.Height);
-            }
-            return results;
         }
     }
 }
